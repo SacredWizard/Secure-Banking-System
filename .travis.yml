@@ -6,8 +6,8 @@ dist: trusty
 jdk: oraclejdk8
 
 script:
-#  - gradle wrapper --gradle-version 6.1.1 --distribution-type all
-  - bash gradlew build --scan -s
+  - gradle wrapper --gradle-version 6.1.1 --distribution-type all
+  - gradle build --scan -s
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
