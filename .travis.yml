@@ -6,10 +6,7 @@ dist: trusty
 jdk: oraclejdk8
 
 script:
-  - pwd
-  - ls -lrt
-  - find .
-  - ./gradlew build --scan -s
+  - bash ./gradlew build --scan -s
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
