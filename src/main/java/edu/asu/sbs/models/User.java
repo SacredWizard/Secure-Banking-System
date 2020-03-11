@@ -13,11 +13,13 @@ import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.sql.Date;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Data
 public class User implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -1L;
 
 
     @Id
@@ -51,7 +53,8 @@ public class User implements Serializable {
 
     @NotNull
     @Pattern(regexp = Constants.SSN_REGEX)
-    @Column(unique = true, nullable = false)
+    @Size(min = 11, max = 11)
+    @Column(unique = true, nullable = false, length = 11)
     private String ssn;
 
     @NotNull
@@ -73,13 +76,21 @@ public class User implements Serializable {
     @NotNull
     @Size(min = 60, max = 60)
     @Column(nullable = false, length = 60)
-    private String password;
+    private String passwordHash;
 
     @Size(max = 20)
     @Column(length = 20)
     @JsonIgnore
     private String resetKey;
 
+    @OneToMany(cascade = CascadeType.ALL, mappedBy="user")
+    private Set<Account> accounts = new HashSet<>();
+
     private Instant resetDate = null;
+
+    @Size(max = 20)
+    @Column(length = 20)
+    @JsonIgnore
+    private String activationKey;
 
 }

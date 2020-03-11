@@ -1,6 +1,7 @@
 package edu.asu.sbs.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.web.cors.CorsConfiguration;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -12,8 +13,20 @@ public class SbsProperties {
 
     private final Security security = new Security();
 
+    private final CorsConfiguration corsConfiguration = new CorsConfiguration();
+
+    private final Http http = new Http();
+
+    public CorsConfiguration getCorsConfiguration() {
+        return this.corsConfiguration;
+    }
+
     public Security getSecurity() {
-        return security;
+        return this.security;
+    }
+
+    public Http getHttp() {
+        return this.http;
     }
 
     public static class Security {
@@ -165,4 +178,28 @@ public class SbsProperties {
             }
         }
     }
+
+    public static class Http {
+
+        private final Cache cache = new Cache();
+
+        public Cache getCache() {
+            return cache;
+        }
+
+        public static class Cache {
+
+            private int timeToLiveInDays = Defaults.Http.Cache.timeToLiveInDays;
+
+            public int getTimeToLiveInDays() {
+                return timeToLiveInDays;
+            }
+
+            public void setTimeToLiveInDays(int timeToLiveInDays) {
+                this.timeToLiveInDays = timeToLiveInDays;
+            }
+        }
+    }
+
+
 }

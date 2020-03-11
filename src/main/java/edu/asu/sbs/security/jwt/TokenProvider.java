@@ -43,7 +43,7 @@ public class TokenProvider {
     void init() {
         byte[] keyBytes;
         String secret = sbsProperties.getSecurity().getAuthentication().getJwt().getSecret();
-        if (StringUtils.isEmpty(secret)) {
+        if (!StringUtils.isEmpty(secret)) {
             log.warn("Warning: JWT Token Invalid");
             keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         } else {

@@ -32,6 +32,12 @@ public class UserDTO {
     @Size(min = 5, max = 254)
     private String email;
 
+    @Pattern(regexp = Constants.SSN_REGEX)
+    private String ssn;
+
+    @Pattern(regexp = Constants.PHONE_NUMBER_REGEX)
+    private String phoneNumber;
+
     private boolean activated = false;
 
 }
