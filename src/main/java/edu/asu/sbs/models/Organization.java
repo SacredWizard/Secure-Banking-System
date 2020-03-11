@@ -2,9 +2,10 @@ package edu.asu.sbs.models;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Entity
-public class Organization {
+public class Organization implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long organizationId;
