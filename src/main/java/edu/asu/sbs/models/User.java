@@ -18,7 +18,6 @@ import java.util.Set;
 
 @Entity
 @Data
-@Table(name = "BankUser")
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -84,8 +83,8 @@ public class User implements Serializable {
     @JsonIgnore
     private String resetKey;
 
-    @OneToMany(mappedBy="user")
-    private Set<Account> accounts = new HashSet<Account>();
+    @OneToMany(cascade = CascadeType.ALL, mappedBy="user")
+    private Set<Account> accounts = new HashSet<>();
 
     @OneToOne(mappedBy="representative")
     private Organization organization;
