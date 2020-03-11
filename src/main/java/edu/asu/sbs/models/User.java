@@ -87,6 +87,15 @@ public class User implements Serializable {
     @OneToMany(mappedBy="user")
     private Set<Account> accounts = new HashSet<Account>();
 
+    @OneToOne(mappedBy="representative")
+    private Organization organization;
+
+    @OneToOne(mappedBy="requestBy")
+    private Request request;
+
+    @OneToOne(mappedBy="linkedUser")
+    private Session session;
+
     private Instant resetDate = null;
 
     @Size(max = 20)

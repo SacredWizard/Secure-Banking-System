@@ -40,6 +40,10 @@ public class Account {
     @JoinColumn(nullable = false)
     private User user;
 
+    @OneToOne
+    @JoinColumn(nullable = false)
+    private TransactionAccountLog log;
+
     @OneToMany(mappedBy = "fromAccount")
     private Set<Transaction> debitTransactions = new HashSet<>();
 
