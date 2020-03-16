@@ -1,13 +1,12 @@
 package edu.asu.sbs.services;
 
-import edu.asu.sbs.globals.TransactionStatus;
-import edu.asu.sbs.models.Account;
-import edu.asu.sbs.models.Transaction;
 import edu.asu.sbs.config.UserType;
 import edu.asu.sbs.errors.EmailAlreadyUsedException;
 import edu.asu.sbs.errors.PhoneNumberAlreadyUsedException;
 import edu.asu.sbs.errors.SsnAlreadyUsedException;
 import edu.asu.sbs.errors.UsernameAlreadyUsedException;
+import edu.asu.sbs.models.Account;
+import edu.asu.sbs.models.Transaction;
 import edu.asu.sbs.models.User;
 import edu.asu.sbs.repositories.AccountRepository;
 import edu.asu.sbs.repositories.TransactionRepository;
@@ -33,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Optional;
 
@@ -177,6 +177,7 @@ public class UserService {
         return true;
     }
 
+    @Transactional
     public Optional<User> activateRegistration(String key) {
         log.debug("Activating user for activation key {}", key);
         return userRepository.findOneByActivationKey(key)
@@ -185,6 +186,32 @@ public class UserService {
                     user.setActivationKey(null);
                     userRepository.save(user);
                     log.debug("Activated user: {}", user);
+                    return user;
+                });
+    }
+
+    @Transactional
+    public Optional<User> requestPasswordReset(String email) {
+        return userRepository.findOneByEmailIgnoreCase(email)
+                .filter(User::isActive)
+                .map(user -> {
+                    user.setResetKey(RandomUtil.generateResetKey());
+                    user.setResetDate(Instant.now());
+                    userRepository.save(user);
+                    return user;
+                });
+    }
+
+    @Transactional
+    public Optional<User> completePasswordReset(String newPassword, String key) {
+        log.debug("Reset user password for reset key {}", key);
+        return userRepository.findOneByResetKey(key)
+                .filter(user -> user.getResetDate().isAfter(Instant.now().minusSeconds(86400)))
+                .map(user -> {
+                    user.setPasswordHash(passwordEncoder.encode(newPassword));
+                    user.setResetKey(null);
+                    user.setResetDate(null);
+                    userRepository.save(user);
                     return user;
                 });
     }

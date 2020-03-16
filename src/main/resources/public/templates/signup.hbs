@@ -1,0 +1,38 @@
+<Html>
+<head>
+    <link rel="stylesheet" href="/css/signup_style.css">
+    <title> Secure Banking System Register</title>
+</head>
+<body>
+<div class="Signup-page">
+    <div class="form">
+        <form method="post" class="Signup" action="/api/v1/user/register">
+            <input id="name" name="userName" type="text" placeholder="Name" required/>
+            <input name="firstName" type="text" placeholder="First Name">
+            <input name="lastName" type="text" placeholder="Last Name">
+            <input type="date" name="dateOfBirth" placeholder="Date Of Birth">
+            <input type="text" name="phoneNumber" placeholder="phoneNumber" pattern="^\D?(\d{3})\D?\D?(\d{3})\D?(\d{4})$" required>
+            <input type="text" name="email" placeholder="Email" pattern="\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b" required/>
+            <input type="password" id="password" name="password" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$" placeholder="Password" required/>
+            <input type="password" id="confirmPassword" name="password" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$" placeholder="Confirm Password" required/>
+            <input type="text" id="SSN" name="ssn" maxlength="11" placeholder="SSN" pattern="^(?!000|666)[0-8][0-9]{2}-(?!00)[0-9]{2}-(?!0000)[0-9]{4}$">
+            <input type="submit" id="submit"  value="Submit">
+        </form>
+    </div>
+</div>
+<div id="message">
+    <p id="len" class="invalid">
+    <ul>
+        <li>Minimum eight characters</li>
+        <li>At least one uppercase letter</li>
+        <li>At least one lowercase letter</li>
+        <li>At least one number</li>
+        <li>At least one special character</li>
+    </ul>
+    </p>
+</div>
+
+<script type="text/css" src="/js/passwordValidation.js"></script>
+</body>
+</Html>
+

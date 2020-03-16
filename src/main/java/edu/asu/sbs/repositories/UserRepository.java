@@ -24,4 +24,7 @@ public interface UserRepository extends CrudRepository<User, Long> {
     Optional<User> findOneByUserNameOrEmailIgnoreCaseOrSsnOrPhoneNumber(String userName, String email, String ssn, String phoneNumber);
 
     Optional<User> findOneByActivationKey(String activationKey);
+
+    Optional<User> findOneByResetKey(String key);
+
 }

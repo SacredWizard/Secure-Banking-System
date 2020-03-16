@@ -15,7 +15,13 @@ public class SbsProperties {
 
     private final CorsConfiguration corsConfiguration = new CorsConfiguration();
 
+    private final Mail mail = new Mail();
+
     private final Http http = new Http();
+
+    public Mail getMail() {
+        return mail;
+    }
 
     public CorsConfiguration getCorsConfiguration() {
         return this.corsConfiguration;
@@ -201,5 +207,37 @@ public class SbsProperties {
         }
     }
 
+    public static class Mail {
+
+        private boolean enabled = Defaults.Mail.enabled;
+
+        private String from = Defaults.Mail.from;
+
+        private String baseUrl = Defaults.Mail.baseUrl;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getFrom() {
+            return from;
+        }
+
+        public void setFrom(String from) {
+            this.from = from;
+        }
+
+        public String getBaseUrl() {
+            return baseUrl;
+        }
+
+        public void setBaseUrl(String baseUrl) {
+            this.baseUrl = baseUrl;
+        }
+    }
 
 }
