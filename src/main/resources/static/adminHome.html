@@ -1,0 +1,114 @@
+<Html>
+<Head>
+    <title> Secure Banking System Login</title>
+
+    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/4.4.1-1/css/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <link rel="stylesheet" type="text/css" href="/webjars/datatables/1.10.19/css/dataTables.bootstrap.min.css"/>
+    <script type="text/javascript" src="/webjars/bootstrap/4.4.1-1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="webjars/datatables/1.10.19/js/dataTables.bootstrap.min.js"></script>
+    <script type="text/javascript" src="/webjars/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="./js/adminHandler.js"></script>
+    <script>
+        // compile the template
+        var template = Handlebars.compile("Handlebars <b>{{doesWhat}}</b>");
+        // execute the compiled template and print the output to the console
+        console.log(template({ doesWhat: "rocks!" }));
+    </script>
+
+</head>
+<body>
+<header>
+    <ul>
+        <li><a class="active" href="#home">Secure Banking System</a></li>
+        <li><a href="#contact">View Employee Requests</a></li>
+        <li><a href="#about">Access Logs</a></li>
+        <li><a href="#about">Access Employee Accounts</a></li>
+    </ul>
+</header>
+<div >
+    <form method="POST" action="">
+        <table id="results" width="100%">
+            <thead>
+            <tr>
+                <th>Employee ID
+                </th>
+                <th class="col-sm-5 text-center">Request Description
+                </th>
+                <th class="col-sm-4 text-center">Time
+                </th>
+                <th class="col-sm-4 text-center">Approve/Deny
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td align="center">A</td>
+                <td align="center">B</td>
+                <td align="center">C</td>
+                <td align="center">
+                    <button class="inline"> <a href=""> Approve </a> </button>
+                    <button class="inline"> <a href=""> Deny </a> </button>
+                </td>
+            </tr>
+            <tr>
+                <td align="center">A</td>
+                <td align="center">B</td>
+                <td align="center">C</td>
+                <td align="center">
+                    <button class="inline"> <a href=""> Approve </a> </button>
+                    <button class="inline"> <a href=""> Deny </a> </button>
+                </td>
+            </tr>
+            <tr>
+                <td align="center">A</td>
+                <td align="center">B</td>
+                <td align="center">C</td>
+                <td align="center">
+                    <button class="inline"> <a href=""> Approve </a> </button>
+                    <button class="inline"> <a href=""> Deny </a> </button>
+                </td>
+            </tr>
+            <tr>
+                <td align="center">A</td>
+                <td align="center">B</td>
+                <td align="center">C</td>
+                <td align="center">
+                    <button class="inline"> <a href=""> Approve </a> </button>
+                    <button class="inline"> <a href=""> Deny </a> </button>
+                </td>
+            </tr>
+            <tr>
+                <td align="center">A</td>
+                <td align="center">B</td>
+                <td align="center">C</td>
+                <td align="center">
+                    <button class="inline"> <a href=""> Approve </a> </button>
+                    <button class="inline"> <a href=""> Deny </a> </button>
+                </td>
+            </tr>
+            <tr>
+                <td align="center">A</td>
+                <td align="center">B</td>
+                <td align="center">C</td>
+                <td align="center">
+                    <button class="inline"> <a href=""> Approve </a> </button>
+                    <button class="inline"> <a href=""> Deny </a> </button>
+                </td>
+            </tr>
+            <tr>
+                <td align="center">A</td>
+                <td align="center">B</td>
+                <td align="center">C</td>
+                <td align="center">
+                    <button class="inline"> <a href=""> Approve </a> </button>
+                    <button class="inline"> <a href=""> Deny </a> </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
+</div>
+
+</body>
+</Html>

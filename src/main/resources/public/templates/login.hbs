@@ -1,0 +1,20 @@
+<Html>
+<Head>
+    <link rel="stylesheet" href="/css/style.css">
+    <title> Secure Banking System Login</title>
+</head>
+<body>
+<div class="login-page">
+    <h1> Secure Banking System</h1>
+    <div class="form">
+        <form class="LoginForm" method="post" action="/api/v1/user/authenticate">
+            <input type="text" name="userName" placeholder="User Name" required/>
+            <input type="password" name="password" placeholder="Password"  required/>
+            <button>Login</button><br>
+            <p> Not a member yet?</p>
+            <div id="button"><a href="/api/v1/user/signup">SignUp</a></div>
+        </form>
+    </div>
+</div>
+</body>
+</Html>
