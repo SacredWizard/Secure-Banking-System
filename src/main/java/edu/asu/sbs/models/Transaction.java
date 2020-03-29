@@ -1,6 +1,7 @@
 package edu.asu.sbs.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +23,9 @@ public class Transaction implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long transactionId;
+
+    @JsonIgnore
+    private static final String DOC_TYPE = "transaction";
 
     @NotNull
     @Column(nullable = false, length = 50)
