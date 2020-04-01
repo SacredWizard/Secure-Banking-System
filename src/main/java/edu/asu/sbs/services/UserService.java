@@ -16,6 +16,8 @@ import edu.asu.sbs.repositories.TransactionRepository;
 import edu.asu.sbs.repositories.UserRepository;
 import edu.asu.sbs.security.jwt.JWTFilter;
 import edu.asu.sbs.security.jwt.TokenProvider;
+import edu.asu.sbs.services.dto.TransactionDTO;
+import edu.asu.sbs.services.dto.TransferOrRequestDTO;
 import edu.asu.sbs.services.dto.UserDTO;
 import edu.asu.sbs.util.RandomUtil;
 import edu.asu.sbs.vm.LoginVM;
@@ -55,9 +57,10 @@ public class UserService {
     private final TransactionRepository transactionRepository;
     private final TransactionAccountLogRepository transactionAccountLogRepository;
     private final OTPService otpService;
+    private final AccountService accountService;
 
 
-    public UserService(UserRepository userRepository, AccountRepository accountRepository, TransactionRepository transactionRepository, AuthenticationManagerBuilder authenticationManagerBuilder, TokenProvider tokenProvider, PasswordEncoder passwordEncoder, TransactionAccountLogRepository transactionAccountLogRepository, OTPService otpService) {
+    public UserService(UserRepository userRepository, AccountRepository accountRepository, TransactionRepository transactionRepository, AuthenticationManagerBuilder authenticationManagerBuilder, TokenProvider tokenProvider, PasswordEncoder passwordEncoder, TransactionAccountLogRepository transactionAccountLogRepository, OTPService otpService, AccountService accountService) {
         this.userRepository = userRepository;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.tokenProvider = tokenProvider;
@@ -66,6 +69,7 @@ public class UserService {
         this.transactionRepository = transactionRepository;
         this.transactionAccountLogRepository = transactionAccountLogRepository;
         this.otpService = otpService;
+        this.accountService = accountService;
     }
 
     @Transactional
@@ -249,8 +253,11 @@ public class UserService {
 
     @Transactional
     public Optional<User> activateRegistration(String key) {
+        Optional<User> optionalUser = userRepository.findOneByActivationKey(key);
         log.debug("Activating user for activation key {}", key);
-        return userRepository.findOneByActivationKey(key)
+        // create a default account for the user
+        accountService.createDefaultAccount(optionalUser.get());
+        return optionalUser
                 .map(user -> {
                     user.setActive(true);
                     user.setActivationKey(null);
@@ -322,14 +329,13 @@ public class UserService {
         return userRepository.findById(userDTO.getId())
                 .map(user -> {
                     user.setPhoneNumber(userDTO.getPhoneNumber());
+                    user.setUserName(userDTO.getUserName());
                     user.setFirstName(userDTO.getFirstName());
                     user.setLastName(userDTO.getLastName());
-                    //user.setAddressLine1(userDTO.getAddressLine1());
-                    //user.setAddressLine2(userDTO.getAddressLine2());
-                    //user.setCity(userDTO.getCity());
-                    //user.setState(userDTO.getState());
-                    //user.setZip(userDTO.getZip());
-                    //user.setModifiedOn(LocalDateTime.now());
+                    user.setDateOfBirth(userDTO.getDateOfBirth());
+                    user.setEmail(userDTO.getEmail());
+                    user.setSsn(userDTO.getSsn());
+                    user.setActive(true);
                     userRepository.save(user);
                     return user;
                 });
@@ -372,4 +378,48 @@ public class UserService {
         return userRepository.findOneByUserName(userName).get();
     }
 
+    public User getUserByEmail(String email){
+        return userRepository.findOneByEmailAndIsActive(email,true).get();
+    }
+
+    public User getUserByPhoneNumber(String phoneNumber){
+        return userRepository.findOneByPhoneNumberAndIsActive(phoneNumber,true).get();
+    }
+
+    public TransactionDTO transferByEmailOrPhone(TransferOrRequestDTO transferOrRequestDTO){
+        User user = this.getCurrentUser();
+        TransactionDTO transactionDTO = new TransactionDTO();
+        transactionDTO.setFromAccount(accountService.getDefaultAccount(user).getId());
+        transactionDTO.setDescription(transferOrRequestDTO.getDescription());
+        transactionDTO.setTransactionAmount(transferOrRequestDTO.getAmount());
+        transactionDTO.setTransactionType(TransactionType.DEBIT);
+        switch (transferOrRequestDTO.getMode()) {
+            case "account":
+                if (!accountService.getDefaultAccount(user).equals(transferOrRequestDTO.getToAccount())){
+                    transactionDTO.setToAccount(transferOrRequestDTO.getToAccount());}
+                else{
+                    throw new GenericRuntimeException("You can not Transfer Money to same Account");
+                }
+                break;
+            case "email":
+                if (!user.getEmail().equals(transferOrRequestDTO.getEmail())) {
+                    User toUserEmail = this.getUserByEmail(transferOrRequestDTO.getEmail());
+                    transactionDTO.setToAccount(accountService.getDefaultAccount(toUserEmail).getId());
+                } else {
+                    throw new GenericRuntimeException("You can not Transfer Money to same Account");
+                }
+                break;
+            case "phoneNumber":
+                if (!user.getPhoneNumber().equals(transferOrRequestDTO.getPhoneNumber())) {
+                    User toUserPhone = this.getUserByPhoneNumber(transferOrRequestDTO.getPhoneNumber());
+                    transactionDTO.setToAccount(accountService.getDefaultAccount(toUserPhone).getId());
+                } else {
+                    throw new GenericRuntimeException("You can not Transfer Money to same Account");
+                }
+                break;
+            default:
+                throw new GenericRuntimeException("Invalid mode of Transfer");
+        }
+        return transactionDTO;
+    }
 }

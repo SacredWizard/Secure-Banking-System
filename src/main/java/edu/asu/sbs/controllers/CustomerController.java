@@ -6,17 +6,21 @@ import com.github.jknack.handlebars.Template;
 import edu.asu.sbs.config.TransactionStatus;
 import edu.asu.sbs.config.TransactionType;
 import edu.asu.sbs.config.UserType;
+import edu.asu.sbs.errors.GenericRuntimeException;
 import edu.asu.sbs.errors.UnauthorizedAccessExcpetion;
 import edu.asu.sbs.globals.CreditDebitType;
 import edu.asu.sbs.loader.HandlebarsTemplateLoader;
+import edu.asu.sbs.models.Transaction;
 import edu.asu.sbs.models.User;
+import edu.asu.sbs.repositories.UserRepository;
 import edu.asu.sbs.services.AccountService;
 import edu.asu.sbs.services.RequestService;
 import edu.asu.sbs.services.TransactionService;
 import edu.asu.sbs.services.UserService;
-import edu.asu.sbs.services.dto.AccountDTO;
+import edu.asu.sbs.services.dto.CreateAccountDTO;
 import edu.asu.sbs.services.dto.CreditDebitDTO;
 import edu.asu.sbs.services.dto.TransactionDTO;
+import edu.asu.sbs.services.dto.TransferOrRequestDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -95,8 +99,8 @@ public class CustomerController {
                 accountService.makeSelfTransaction(currentUser, creditDebitRequest);
             else
                 throw new Exception("Invalid Request");
-            log.info(creditDebitRequest.getCreditDebitType()+" Success for account "+creditDebitRequest.getId());
-        } catch(Exception e) {
+            log.info(creditDebitRequest.getCreditDebitType() + " Success for account " + creditDebitRequest.getId());
+        } catch (Exception e) {
             //redirect error message
             System.out.println(e.getMessage());
         }
@@ -125,6 +129,31 @@ public class CustomerController {
         response.sendRedirect("home");
     }
 
+
+    @GetMapping("/transferOrRequest")
+    @ResponseBody
+    public String getTransferOrRequestTemplate() throws IOException {
+        Template template = handlebarsTemplateLoader.getTemplate("extUserTransferAndRequestPayments");
+        return template.apply("");
+    }
+
+    @PostMapping("/transferOrRequest")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void transferOrRequest(TransferOrRequestDTO transferOrRequestDTO, HttpServletResponse response) throws IOException, NullPointerException {
+
+        switch (transferOrRequestDTO.getType()){
+            case "TRANSFER":
+                TransactionDTO transactionDTO = userService.transferByEmailOrPhone(transferOrRequestDTO);
+                transactionService.createTransaction(transactionDTO, TransactionStatus.APPROVED);
+                break;
+            case "REQUEST":
+                break;
+            default:
+                throw new GenericRuntimeException("Invalid Type of request");
+        }
+        response.sendRedirect("home");
+    }
+
     @GetMapping("/reviewRequests")
     @ResponseBody
     public String getReviewRequestTemplate() throws IOException {
@@ -140,7 +169,7 @@ public class CustomerController {
                 throw new Exception("Invalid Request");
             accountService.makeSelfTransaction(currentUser, creditDebitRequest);
             System.out.println("Credit success");
-        } catch(Exception e) {
+        } catch (Exception e) {
             //redirect error message
             System.out.println(e.getMessage());
         }
@@ -154,7 +183,7 @@ public class CustomerController {
                 throw new Exception("Invalid Request");
             accountService.makeSelfTransaction(currentUser, creditDebitRequest);
             System.out.println("Credit success");
-        } catch(Exception e) {
+        } catch (Exception e) {
             //redirect error message
             System.out.println(e.getMessage());
         }
@@ -163,9 +192,9 @@ public class CustomerController {
 
     @PostMapping("/createAccount")
     @ResponseStatus(HttpStatus.CREATED)
-    void createAccount(@RequestBody AccountDTO accountDTO) {
+    void createAccount(@RequestBody CreateAccountDTO createAccountDTO) {
         User currentUser = userService.getCurrentUser();
-        accountService.createAccount(currentUser,accountDTO);
+        accountService.createAccount(currentUser, createAccountDTO);
     }
 
 }

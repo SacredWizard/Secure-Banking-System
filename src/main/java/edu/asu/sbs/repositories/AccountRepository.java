@@ -14,12 +14,15 @@ import java.util.Optional;
 public interface AccountRepository extends CrudRepository<Account, Long> {
     Optional<Account> findOneByAccountNumberEquals(String s);
 
-    @Query("select bankAccount from Account bankAccount where bankAccount.user = :user")
-    List<Account> findByUser(@Param("user") User user);
+    List<Account> findByUserAndIsActive(@Param("user") User user, boolean isActive);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select bankAccount from Account bankAccount where bankAccount.user = :user")
     List<Account> findByUserAndLock(@Param("user") User user);
 
-    Account getAccountById(Long id);
+    Optional<Account> getAccountById(Long id);
+
+    Optional<Account> findByAccountNumber(String accountNumber);
+
+    Optional<Account> findAccountByUserAndDefaultAccount(User user,boolean defaultAccount);
 }

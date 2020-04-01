@@ -6,8 +6,9 @@
         <table id="results" class="display cell-border hover" width="100%">
             <thead>
             <tr>
-                <th align="center">Account Number:</th>
-                <th align="center">Account Type:</th>
+                <th align="center">User ID</th>
+                <th align="center">Account Number</th>
+                <th align="center">Account Type</th>
                 <th align="center">Balance</th>
             </tr>
             </thead>
@@ -15,9 +16,10 @@
             {{#each result }}
                 <form method="POST">
                     <tr>
-                        <td align="center">{{ accountNumber }}</td>
+                        <td align="center">{{ userId }}</td>
+                        <td align="center">{{ accountId }}</td>
                         <td align="center">{{ accountType }}</td>
-                        <td align="center">{{ accountBalance }}</td>
+                        <td align="center">{{ balance }}</td>
                     </tr>
                 </form>
             {{/each}}

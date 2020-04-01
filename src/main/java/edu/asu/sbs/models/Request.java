@@ -58,4 +58,9 @@ public class Request implements Serializable {
     @JoinColumn
     private Transaction linkedTransaction;
 
+    @JsonBackReference
+    @ManyToOne
+    @JoinColumn
+    private Account linkedAccount;
+
 }

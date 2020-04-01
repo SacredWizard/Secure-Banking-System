@@ -1,8 +1,8 @@
 package edu.asu.sbs.controllers;
 
 import edu.asu.sbs.config.UserType;
-import edu.asu.sbs.models.Account;
 import edu.asu.sbs.services.AccountService;
+import edu.asu.sbs.services.dto.ViewAccountDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +24,7 @@ public class AccountController {
 
     @PreAuthorize("hasAnyAuthority('" + UserType.EMPLOYEE_ROLE1 + "','" + UserType.EMPLOYEE_ROLE2 + "')")
     @GetMapping("/accounts")
-    public List<Account> getAccounts() {
+    public List<ViewAccountDTO> getAccounts() {
         return accountService.getAccounts();
     }
 

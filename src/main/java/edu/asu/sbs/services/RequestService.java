@@ -5,13 +5,13 @@ import edu.asu.sbs.config.RequestType;
 import edu.asu.sbs.config.StatusType;
 import edu.asu.sbs.config.TransactionType;
 import edu.asu.sbs.errors.GenericRuntimeException;
-import edu.asu.sbs.models.Request;
-import edu.asu.sbs.models.Transaction;
-import edu.asu.sbs.models.TransactionAccountLog;
-import edu.asu.sbs.models.User;
+import edu.asu.sbs.models.*;
 import edu.asu.sbs.repositories.RequestRepository;
 import edu.asu.sbs.repositories.TransactionAccountLogRepository;
 import edu.asu.sbs.repositories.TransactionRepository;
+import edu.asu.sbs.repositories.UserRepository;
+import edu.asu.sbs.services.dto.CreateAccountDTO;
+import edu.asu.sbs.services.dto.RequestDTO;
 import edu.asu.sbs.services.dto.Tier2RequestsDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,16 +26,32 @@ public class RequestService {
     private final RequestRepository requestRepository;
     private final TransactionRepository transactionRepository;
     private final TransactionAccountLogRepository transactionAccountLogRepository;
+    private final AccountService accountService;
+    private final UserRepository userRepository;
 
-    public RequestService(RequestRepository requestRepository, TransactionRepository transactionRepository, TransactionAccountLogRepository transactionAccountLogRepository) {
+    public RequestService(RequestRepository requestRepository, TransactionRepository transactionRepository, TransactionAccountLogRepository transactionAccountLogRepository, AccountService accountService, UserRepository userRepository) {
         this.requestRepository = requestRepository;
         this.transactionRepository = transactionRepository;
         this.transactionAccountLogRepository = transactionAccountLogRepository;
+        this.accountService = accountService;
+        this.userRepository = userRepository;
     }
 
     public List<Request> getAllAdminRequests() {
         List<Request> requestList = Lists.newArrayList();
-        requestList.addAll(requestRepository.findAll());
+        requestList.addAll(requestRepository.findByRequestTypeInAndIsDeleted(Lists.newArrayList(RequestType.TIER1_TO_TIER2, RequestType.TIER2_TO_TIER1), false));
+        return requestList;
+    }
+
+    public List<Request> getEmpProfileUpdateRequests() {
+        List<Request> requestList = Lists.newArrayList();
+        requestList.addAll(requestRepository.findByRequestTypeInAndIsDeleted(Lists.newArrayList(RequestType.UPDATE_EMP_PROFILE), false));
+        return requestList;
+    }
+
+    public List<Request> getUserProfileUpdateRequests() {
+        List<Request> requestList = Lists.newArrayList();
+        requestList.addAll(requestRepository.findByRequestTypeInAndIsDeleted(Lists.newArrayList(RequestType.UPDATE_USER_PROFILE), false));
         return requestList;
     }
 
@@ -97,5 +113,60 @@ public class RequestService {
         transactionAccountLogRepository.save(transactionAccountLog);
         transactionRepository.save(transaction);
         requestRepository.save(request);
+    }
+
+    @Transactional
+    public void updateUserProfile(Request request, User approver, String requestType, String action, RequestDTO requestDTO) {
+
+        if (requestDTO.getEmail().isEmpty() && requestDTO.getPhoneNumber().isEmpty()) {
+            throw new GenericRuntimeException("Both phone number and email are empty");
+        }
+
+        request.setRequestType(requestType);
+        request.setApprovedBy(approver);
+        request.setStatus(action);
+        request.setModifiedDate(Instant.now());
+
+        User user = request.getRequestBy();
+        switch (action) {
+            case StatusType.APPROVED:
+                if (!requestDTO.getPhoneNumber().isEmpty()) {
+                    user.setPhoneNumber(requestDTO.getPhoneNumber());
+                }
+                if (!requestDTO.getEmail().isEmpty()) {
+                    user.setEmail(requestDTO.getEmail());
+                }
+                userRepository.save(user);
+                break;
+            case StatusType.DECLINED:
+                //don't do anything
+                break;
+            default:
+                throw new GenericRuntimeException("Invalid Action");
+        }
+    }
+
+    @Transactional
+    public void updateAccountCreationRequest(Request request, User approver, String requestType, String action, CreateAccountDTO createAccountDTO) {
+        request.setRequestType(requestType);
+        request.setApprovedBy(approver);
+        request.setStatus(action);
+        request.setModifiedDate(Instant.now());
+
+        //User customer = request.getRequestBy();
+        Account account = request.getLinkedAccount();
+
+        switch (action) {
+            case StatusType.APPROVED:
+                //accountService.createAccount(customer, accountDTO);
+                account.setActive(true);
+                break;
+            case StatusType.DECLINED:
+                // do nothing
+                accountService.deleteAccount(account);
+                break;
+            default:
+                throw new GenericRuntimeException("Invalid Action");
+        }
     }
 }

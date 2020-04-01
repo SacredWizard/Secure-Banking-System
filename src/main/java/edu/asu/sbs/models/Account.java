@@ -57,6 +57,10 @@ public class Account implements Serializable {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
+    @NotNull
+    @Column(nullable = false)
+    private boolean defaultAccount;
+
     @JsonManagedReference
     @OneToMany(mappedBy = "account")
     private Set<TransactionAccountLog> accountLogs = new HashSet<>();
@@ -76,5 +80,9 @@ public class Account implements Serializable {
     @JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "chequeToAccount")
     private Set<Cheque> toCheques = new HashSet<>();
+
+    @JsonManagedReference
+    @OneToMany(mappedBy = "linkedAccount")
+    private Set<Request> request = new HashSet<>();
 
 }

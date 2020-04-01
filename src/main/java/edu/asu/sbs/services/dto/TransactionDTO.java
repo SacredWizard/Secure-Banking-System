@@ -1,11 +1,11 @@
 package edu.asu.sbs.services.dto;
 
-import edu.asu.sbs.models.Request;
-import edu.asu.sbs.models.TransactionAccountLog;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.time.Instant;
 
 @Data
 public class TransactionDTO {
@@ -30,8 +30,16 @@ public class TransactionDTO {
     @NotNull
     private Long toAccount;
 
-    private Request request;
+    private Long requestId;
 
-    private TransactionAccountLog log;
+    private Long transactionAccountLog;
+
+    @NotNull
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    private Instant createdDate;
+
+    @NotNull
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    private Instant modifiedDate;
 
 }

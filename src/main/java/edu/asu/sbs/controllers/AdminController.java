@@ -3,15 +3,20 @@ package edu.asu.sbs.controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jknack.handlebars.Template;
+import com.google.common.collect.Maps;
 import edu.asu.sbs.config.RequestType;
+import edu.asu.sbs.config.StatusType;
 import edu.asu.sbs.config.UserType;
 import edu.asu.sbs.errors.Exceptions;
 import edu.asu.sbs.errors.UnauthorizedAccessExcpetion;
+import edu.asu.sbs.globals.AccountType;
 import edu.asu.sbs.loader.HandlebarsTemplateLoader;
 import edu.asu.sbs.models.Request;
 import edu.asu.sbs.models.User;
+import edu.asu.sbs.services.AccountService;
 import edu.asu.sbs.services.RequestService;
 import edu.asu.sbs.services.UserService;
+import edu.asu.sbs.services.dto.RequestDTO;
 import edu.asu.sbs.services.dto.UserDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -41,13 +46,15 @@ public class AdminController {
     private final UserService userService;
     private final RequestService requestService;
     private final HandlebarsTemplateLoader handlebarsTemplateLoader;
+    private final AccountService accountService;
 
     ObjectMapper mapper = new ObjectMapper();
 
-    public AdminController(UserService userService, RequestService requestService, HandlebarsTemplateLoader handlebarsTemplateLoader) {
+    public AdminController(UserService userService, RequestService requestService, HandlebarsTemplateLoader handlebarsTemplateLoader, AccountService accountService) {
         this.userService = userService;
         this.requestService = requestService;
         this.handlebarsTemplateLoader = handlebarsTemplateLoader;
+        this.accountService = accountService;
     }
 
     // Details of the admin.
@@ -118,7 +125,7 @@ public class AdminController {
         return template.apply(handlebarsTemplateLoader.getContext(result));
     }
 
-    @GetMapping("/requests")
+    @GetMapping("/Requests")
     public String getAllUserRequest() throws IOException {
         ArrayList<Request> allRequests = (ArrayList<Request>) requestService.getAllAdminRequests();
         HashMap<String, ArrayList<Request>> resultMap = new HashMap<>();
@@ -183,9 +190,85 @@ public class AdminController {
             while ((bytesRead = inputStream.read(buffer)) != -1) {
                 outStream.write(buffer, 0, bytesRead);
             }
-
         }
+    }
 
+    @GetMapping("/profileUpdateRequests")
+    public String getEmpProfileUpdaterRequest() throws IOException {
+        ArrayList<Request> allRequests = (ArrayList<Request>) requestService.getEmpProfileUpdateRequests();
+        HashMap<String, ArrayList<Request>> resultMap = new HashMap<>();
+        resultMap.put("result", allRequests);
+        JsonNode result = mapper.valueToTree(resultMap);
+        Template template = handlebarsTemplateLoader.getTemplate("adminHome");
+        return template.apply(handlebarsTemplateLoader.getContext(result));
+    }
 
+    @PostMapping("/approveUpdateEmpProfile/{requestId}")
+    private void approveEmployeeProfile(Long requestId, RequestDTO requestDTO) {
+        Optional<Request> request = requestService.getRequest(requestId);
+        User user = userService.getCurrentUser();
+        request.ifPresent(req -> {
+            if (RequestType.UPDATE_EMP_PROFILE.equals(req.getRequestType()) && req.getStatus().equals(StatusType.PENDING)) {
+                requestService.updateUserProfile(req, user, RequestType.UPDATE_EMP_PROFILE, StatusType.APPROVED, requestDTO);
+            }
+        });
+    }
+
+    @PostMapping("/declineUpdateEmpProfile/{requestId}")
+    private void declineEmployeeProfile(Long requestId, RequestDTO requestDTO) {
+        Optional<Request> request = requestService.getRequest(requestId);
+        User user = userService.getCurrentUser();
+        request.ifPresent(req -> {
+            if (RequestType.UPDATE_EMP_PROFILE.equals(req.getRequestType()) && req.getStatus().equals(StatusType.PENDING)) {
+                requestService.updateUserProfile(req, user, RequestType.UPDATE_EMP_PROFILE, StatusType.DECLINED, requestDTO);
+            }
+        });
+    }
+
+    /* Admin can edit his own details */
+    @PostMapping("/details/edit")
+    private void updateAdminProfile(UserDTO userDTO) {
+        User user = userService.getCurrentUser();
+        if (user.getUserType() == UserType.ADMIN_ROLE) {
+            userService.editUser(userDTO);
+        }
+    }
+
+    @GetMapping("/employee/modifyAccount/{id}")
+    public String getModifyAccountTemplate(@PathVariable Long id) throws IOException {
+        HashMap<String, Long> resultMap = Maps.newHashMap();
+        resultMap.put("id", id);
+        JsonNode result = mapper.valueToTree(resultMap);
+        Template template = handlebarsTemplateLoader.getTemplate("tier2ModifyAccount");
+        return template.apply(handlebarsTemplateLoader.getContext(result));
+    }
+
+    @PostMapping("/employee/modifyAccount")
+    public void modifyUserAccount(Long id, AccountType accountType, HttpServletResponse response) throws IllegalStateException, IOException {
+
+        switch (accountType) {
+            case CHECKING:
+                accountService.updateAccountType(id, AccountType.CHECKING);
+                break;
+            case SAVINGS:
+                accountService.updateAccountType(id, AccountType.SAVINGS);
+                break;
+            case CURRENT:
+                accountService.updateAccountType(id, AccountType.CURRENT);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + accountType);
+        }
+        response.sendRedirect("transactions");
+    }
+
+    @PostMapping("/employee/closeAccount")
+    public void closeEmployeeAccount(Long id, HttpServletResponse response) throws IllegalStateException, IOException {
+        if (id != null) {
+            accountService.closeUserAccount(id);
+        } else {
+            throw new IllegalStateException("Incorrect Id: " + id);
+        }
+        response.sendRedirect("requests");
     }
 }

@@ -19,6 +19,7 @@ import edu.asu.sbs.services.AccountService;
 import edu.asu.sbs.services.RequestService;
 import edu.asu.sbs.services.TransactionService;
 import edu.asu.sbs.services.UserService;
+import edu.asu.sbs.services.dto.CreateAccountDTO;
 import edu.asu.sbs.services.dto.Tier2RequestsDTO;
 import edu.asu.sbs.services.dto.UserDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -157,6 +158,7 @@ public class Tier2Controller {
         return template.apply(handlebarsTemplateLoader.getContext(result));
     }
 
+    /*
     @GetMapping("/editUser/{id}")
     public String modifyUserDetail(UserDTO userDTO) throws Exceptions, IOException {
 
@@ -170,6 +172,7 @@ public class Tier2Controller {
             throw new Exceptions("404", " ");
         }
     }
+    */
 
     @PostMapping("/approveTransaction")
     public void approveEdit(Long id, HttpServletResponse response) throws IOException {
@@ -207,21 +210,22 @@ public class Tier2Controller {
     }
 
     @PostMapping("/modifyAccount")
-    public void modifyUserAccount(Long accountId, AccountType type) throws IllegalStateException {
+    public void modifyUserAccount(Long id, AccountType accountType, HttpServletResponse response) throws IllegalStateException, IOException {
 
-        switch (type) {
+        switch (accountType) {
             case CHECKING:
-                accountService.updateAccountType(accountId, AccountType.CHECKING);
+                accountService.updateAccountType(id, AccountType.CHECKING);
                 break;
             case SAVINGS:
-                accountService.updateAccountType(accountId, AccountType.SAVINGS);
+                accountService.updateAccountType(id, AccountType.SAVINGS);
                 break;
             case CURRENT:
-                accountService.updateAccountType(accountId, AccountType.CURRENT);
+                accountService.updateAccountType(id, AccountType.CURRENT);
                 break;
             default:
-                throw new IllegalStateException("Unexpected value: " + type);
+                throw new IllegalStateException("Unexpected value: " + accountType);
         }
+        response.sendRedirect("transactions");
     }
 
     @PostMapping("/closeAccount")
@@ -233,4 +237,59 @@ public class Tier2Controller {
         }
         response.sendRedirect("transactions");
     }
+
+    @PostMapping("/approveCreateAccountReq")
+    public void approveAdditionalAccount(Long id, CreateAccountDTO createAccountDTO, HttpServletResponse response) throws IOException {
+
+        Optional<Request> request = requestService.getRequest(id);
+        User user = userService.getCurrentUser();
+        request.ifPresent(req -> {
+            if (RequestType.CREATE_ADDITIONAL_ACCOUNT.equals(req.getRequestType()) && req.getStatus().equals(StatusType.PENDING)) {
+                requestService.updateAccountCreationRequest(req, user, RequestType.CREATE_ADDITIONAL_ACCOUNT, StatusType.APPROVED, createAccountDTO);
+            }
+        });
+        response.sendRedirect("transactions");
+    }
+
+    @PostMapping("/denyCreateAccountReq")
+    public void declineAdditionalAccount(Long id, CreateAccountDTO createAccountDTO, HttpServletResponse response) throws IOException {
+
+        Optional<Request> request = requestService.getRequest(id);
+        User user = userService.getCurrentUser();
+        request.ifPresent(req -> {
+            if (RequestType.CREATE_ADDITIONAL_ACCOUNT.equals(req.getRequestType()) && req.getStatus().equals(StatusType.PENDING)) {
+                requestService.updateAccountCreationRequest(req, user, RequestType.CREATE_ADDITIONAL_ACCOUNT, StatusType.DECLINED, createAccountDTO);
+            }
+        });
+        response.sendRedirect("transactions");
+    }
+
+    /*
+    @PostMapping("/approveNewAccountReq")
+    public void approveEdit(Long id, CreateAccountDTO createAccountDTO, HttpServletResponse response) throws IOException {
+
+        Optional<Request> request = requestService.getRequest(id);
+        User user = userService.getCurrentUser();
+        request.ifPresent(req -> {
+            if (RequestType.CREATE_NEW_ACCOUNT.equals(req.getRequestType()) && req.getStatus().equals(StatusType.PENDING)) {
+                requestService.updateAccountCreationRequest(req, user, RequestType.CREATE_NEW_ACCOUNT, StatusType.APPROVED, createAccountDTO);
+            }
+        });
+        response.sendRedirect("transactions");
+    }
+
+    @PostMapping("/denyNewAccountReq")
+    public void denyTransaction(Long id, CreateAccountDTO createAccountDTO, HttpServletResponse response) throws IOException {
+
+        Optional<Request> request = requestService.getRequest(id);
+        User user = userService.getCurrentUser();
+        request.ifPresent(req -> {
+            if (RequestType.CREATE_NEW_ACCOUNT.equals(req.getRequestType()) && req.getStatus().equals(StatusType.PENDING)) {
+                requestService.updateAccountCreationRequest(req, user, RequestType.CREATE_NEW_ACCOUNT, StatusType.DECLINED, createAccountDTO);
+            }
+        });
+        response.sendRedirect("transactions");
+    }
+    */
+
 }

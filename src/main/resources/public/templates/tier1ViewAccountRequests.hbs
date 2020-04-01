@@ -6,45 +6,31 @@
         <table id="results" width="100%">
             <thead>
             <tr>
-                <th align="center">Modified Date</th>
-                <th align="center">Created Date</th>
                 <th align="center">Request ID</th>
-                <th align="center">Transaction ID</th>
+                <th align="center">Request Type</th>
                 <th align="center">Status</th>
+                <th align="center">UserId</th>
                 <th align="center">Description</th>
-                <th align="center">From Account</th>
-                <th align="center">To Account</th>
-                <th align="center">Amount</th>
-                <th align="center">Type</th>
                 <th align="center">Approve/Deny</th>
             </tr>
             </thead>
             <tbody>
 
             {{#each result }}
-
-                {{#log}}
-                    {{this}}
-                {{/log}}
                 <tr>
-                    <td align="center">{{ modifiedDate }}</td>
-                    <td align="center">{{ createdDate }}</td>
                     <td align="center">{{ requestId }}</td>
-                    <td align="center">{{ transactionId }}</td>
+                    <td align="center">{{ requestType }}</td>
                     <td align="center">{{ status }}</td>
+                    <td align="center">{{ userId }}</td>
                     <td align="center">{{ description }}</td>
-                    <td align="center">{{ fromAccount }}</td>
-                    <td align="center">{{ toAccount }}</td>
-                    <td align="center">{{ amount }}</td>
-                    <td align="center">{{ type }}</td>
                     <td align="center">
                     {{#eq transactionStatus "PENDING"}}
-                        <form method="post" action="/api/v1/tier2/approveTransaction" class="inline">
+                        <form method="post" action="/api/v1/tier1/approveModification" class="inline">
                             <input type="text" name="id" value="{{requestId}}" style="display: none">
                             <input id="update" class="btn btn-primary" type="submit" name="approve"
                                    value="Approve"/>
                         </form>
-                        <form method="post" action="/api/v1/tier2/denyTransaction" class="inline">
+                        <form method="post" action="/api/v1/tier1/denyModification" class="inline">
                             <input type="text" name="id" value="{{requestId}}" style="display: none">
                             <input id="delete" class="btn btn-danger" type="submit" name="deny"
                                    value="Deny"/>
@@ -63,4 +49,4 @@
 {{#partial "scripts"}}
     <script type="text/javascript" src="/js/dataTableHandler.js"></script>
 {{/partial}}
-{{> tier2Base}}
+{{> tier1Base}}
