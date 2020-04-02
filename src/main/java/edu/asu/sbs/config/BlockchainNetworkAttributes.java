@@ -16,6 +16,6 @@ public class BlockchainNetworkAttributes {
 
     public static final String CHAINCODE_1_NAME = "TransactionChaincode";
 
-    public static final String CHAINCODE_1_VERSION = "3";
+    public static final String CHAINCODE_1_VERSION = "1";
 
 }
