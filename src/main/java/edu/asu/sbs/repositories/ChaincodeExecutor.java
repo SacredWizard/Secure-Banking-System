@@ -1,6 +1,5 @@
 package edu.asu.sbs.repositories;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.asu.sbs.config.BlockchainNetworkAttributes;
 import edu.asu.sbs.util.RichQuery;
@@ -144,11 +143,23 @@ public class ChaincodeExecutor {
     public String query(RichQuery query) {
         String result = "";
         try {
-            String[] args = {objectMapper.writeValueAsString(query)};
-            result = executeTransaction(false, "query", args);
-        } catch (InvalidArgumentException | ProposalException | InterruptedException | ExecutionException | TimeoutException | JsonProcessingException | ServiceDiscoveryException ex) {
+//            String[] args = {objectMapper.writeValueAsString(query)};
+            String[] args = {};
+            result = executeTransaction(false, "queryAllTransactions", args);
+        } catch (InvalidArgumentException | ProposalException | InterruptedException | ExecutionException | TimeoutException | ServiceDiscoveryException ex) {
             log.error(ex.toString());
         }
+        return result;
+    }
+
+    public String getObjectHistory(String key) {
+        String result = "";
+        try {
+            result = executeTransaction(false, "getHistory", key);
+        } catch (InvalidArgumentException | ProposalException | InterruptedException | ExecutionException | TimeoutException | ServiceDiscoveryException ex) {
+            log.error(ex.toString());
+        }
+
         return result;
     }
 

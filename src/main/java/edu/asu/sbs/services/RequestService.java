@@ -114,9 +114,9 @@ public class RequestService {
         transactionAccountLog.setLogDescription(transactionAccountLog.getLogDescription() + "\n Transaction Approved on " + Instant.now());
         transactionAccountLogRepository.save(transactionAccountLog);
         transactionRepository.save(transaction);
-        if (transaction.getStatus().equals(StatusType.APPROVED)) {
+//        if (transaction.getStatus().equals(StatusType.APPROVED)) {
             transactionHyperledgerService.save(transaction);
-        }
+//        }
         requestRepository.save(request);
     }
 

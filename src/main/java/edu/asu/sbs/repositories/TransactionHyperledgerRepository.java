@@ -6,7 +6,7 @@ import edu.asu.sbs.util.RichQuery;
 import java.util.List;
 
 public interface TransactionHyperledgerRepository {
-    Transaction getById(Long id);
+    String getById(Long id);
 
     void save(Transaction fish);
 
@@ -14,5 +14,7 @@ public interface TransactionHyperledgerRepository {
 
     void delete(Long id);
 
-    List<Transaction> getAll();
+    String getAll();
+
+    String getHistory(String id);
 }

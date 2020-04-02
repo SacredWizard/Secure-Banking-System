@@ -3,6 +3,8 @@ package edu.asu.sbs.repositories;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.Maps;
 import edu.asu.sbs.models.Transaction;
 import edu.asu.sbs.util.RichQuery;
@@ -24,21 +26,25 @@ public class TransactionHyperledgerRepositoryImpl implements TransactionHyperled
     public TransactionHyperledgerRepositoryImpl(ChaincodeExecutor chaincodeExecutor, ObjectMapper objectMapper) {
         this.chaincodeExecutor = chaincodeExecutor;
         this.objectMapper = objectMapper;
+        JavaTimeModule module = new JavaTimeModule();
+        objectMapper.registerModule(module);
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
     @Override
-    public Transaction getById(Long id) {
+    public String getById(Long id) {
         String key = String.valueOf(id);
         String json = chaincodeExecutor.getObjectByKey(key);
-        Transaction transaction = null;
-        if (json != null && !json.isEmpty()) {
-            try {
-                transaction = objectMapper.readValue(json, Transaction.class);
-            } catch (IOException ex) {
-                log.error(ex.toString());
-            }
-        }
-        return transaction;
+        return json;
+//        Transaction transaction = null;
+//        if (json != null && !json.isEmpty()) {
+//            try {
+//                transaction = objectMapper.readValue(json, Transaction.class);
+//            } catch (IOException ex) {
+//                log.error(ex.toString());
+//            }
+//        }
+//        return transaction;
     }
 
     @Override
@@ -76,7 +82,7 @@ public class TransactionHyperledgerRepositoryImpl implements TransactionHyperled
     }
 
     @Override
-    public List<Transaction> getAll() {
+    public String getAll() {
         List<Transaction> transactionList = Lists.newArrayList();
         TypeReference<List<Transaction>> listType = new TypeReference<List<Transaction>>() {
         };
@@ -87,14 +93,20 @@ public class TransactionHyperledgerRepositoryImpl implements TransactionHyperled
         query.setSelector(selector);
 
         String json = chaincodeExecutor.query(query);
+        return json;
+//        try {
+//
+//            transactionList = objectMapper.readValue(json, listType);
+//        } catch (IOException ex) {
+//            log.error(ex.toString());
+//        }
+//
+//        return transactionList;
+    }
 
-        try {
-            transactionList = objectMapper.readValue(json, listType);
-        } catch (IOException ex) {
-            log.error(ex.toString());
-        }
-
-        return transactionList;
+    @Override
+    public String getHistory(String id) {
+        return chaincodeExecutor.getObjectHistory(id);
     }
 
 }

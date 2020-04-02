@@ -4,8 +4,6 @@ import edu.asu.sbs.models.Transaction;
 import edu.asu.sbs.repositories.TransactionHyperledgerRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class TransactionHyperledgerService {
 
@@ -15,7 +13,7 @@ public class TransactionHyperledgerService {
         this.transactionHyperledgerRepository = transactionHyperledgerRepository;
     }
 
-    public Transaction getById(Long id) {
+    public String getById(Long id) {
         return transactionHyperledgerRepository.getById(id);
     }
 
@@ -27,7 +25,11 @@ public class TransactionHyperledgerService {
         transactionHyperledgerRepository.delete(id);
     }
 
-    public List<Transaction> getAll() {
+    public String getAll() {
         return transactionHyperledgerRepository.getAll();
+    }
+
+    public String getHistory(String id) {
+        return transactionHyperledgerRepository.getHistory(id);
     }
 }
