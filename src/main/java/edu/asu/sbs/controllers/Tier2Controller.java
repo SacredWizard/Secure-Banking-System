@@ -145,7 +145,7 @@ public class Tier2Controller {
 
     @GetMapping("/transactions")
     public String getAllUserRequest() throws IOException {
-        List<Tier2RequestsDTO> allRequests = requestService.getAllTier2Requests();
+        List<Tier2RequestsDTO> allRequests = requestService.getAllTransactionRequests();
         HashMap<String, List<Tier2RequestsDTO>> resultMap = Maps.newHashMap();
         resultMap.put("result", allRequests);
         JavaTimeModule module = new JavaTimeModule();
@@ -182,23 +182,57 @@ public class Tier2Controller {
         response.sendRedirect("transactions");
     }
 
-    @PostMapping("/modifyAccount")
-    public void modifyUserAccount(Long id, AccountType accountType, HttpServletResponse response) throws IllegalStateException, IOException {
+    @GetMapping("/modifyAccountRequests")
+    public String getAllModifyAccountRequests() throws IOException {
+        List<AccountTypeChangeDTO> allRequests = requestService.getAllAccountTypeChangeRequests();
+        HashMap<String, List<AccountTypeChangeDTO>> resultMap = Maps.newHashMap();
+        resultMap.put("result", allRequests);
+        JavaTimeModule module = new JavaTimeModule();
+        mapper.registerModule(module);
+        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        JsonNode result = mapper.valueToTree(resultMap);
+        Template template = handlebarsTemplateLoader.getTemplate("modifyAccountTypeRequests");
+        return template.apply(handlebarsTemplateLoader.getContext(result));
+    }
 
+    @PostMapping("/approveModifyAccount")
+    public void approveUserAccount(Long requestId, AccountType accountType, HttpServletResponse response) throws IllegalStateException, IOException {
+
+        User approver = userService.getCurrentUser();
         switch (accountType) {
             case CHECKING:
-                accountService.updateAccountType(id, AccountType.CHECKING);
+                requestService.updateAccountType(requestId, AccountType.CHECKING, StatusType.APPROVED, approver);
                 break;
             case SAVINGS:
-                accountService.updateAccountType(id, AccountType.SAVINGS);
+                requestService.updateAccountType(requestId, AccountType.SAVINGS, StatusType.APPROVED, approver);
                 break;
             case CURRENT:
-                accountService.updateAccountType(id, AccountType.CURRENT);
+                requestService.updateAccountType(requestId, AccountType.CURRENT, StatusType.APPROVED, approver);
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + accountType);
         }
-        response.sendRedirect("transactions");
+        response.sendRedirect("modifyAccountRequests");
+    }
+
+    @PostMapping("/approveModifyAccount")
+    public void denyUserAccount(Long requestId, AccountType accountType, HttpServletResponse response) throws IllegalStateException, IOException {
+
+        User approver = userService.getCurrentUser();
+        switch (accountType) {
+            case CHECKING:
+                requestService.updateAccountType(requestId, AccountType.CHECKING, StatusType.DECLINED, approver);
+                break;
+            case SAVINGS:
+                requestService.updateAccountType(requestId, AccountType.SAVINGS, StatusType.DECLINED, approver);
+                break;
+            case CURRENT:
+                requestService.updateAccountType(requestId, AccountType.CURRENT, StatusType.DECLINED, approver);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + accountType);
+        }
+        response.sendRedirect("modifyAccountRequests");
     }
 
     @PostMapping("/closeAccount")

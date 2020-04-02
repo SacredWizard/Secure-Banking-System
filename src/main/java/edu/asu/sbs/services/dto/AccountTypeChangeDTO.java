@@ -1,37 +1,34 @@
 package edu.asu.sbs.services.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import edu.asu.sbs.config.Constants;
+import edu.asu.sbs.globals.AccountType;
 import lombok.Data;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import java.time.Instant;
 
 @Data
-public class ProfileRequestDTO {
-
-    @Pattern(regexp = Constants.PHONE_NUMBER_REGEX)
-    private String phoneNumber;
-
-    @Email
-    private String email;
+public class AccountTypeChangeDTO {
+    @NotNull
+    String accountNumber;
 
     @NotNull
-    private Long userId;
+    AccountType fromAccountType;
 
     @NotNull
-    private Long requestId;
+    AccountType toAccountType;
 
     @NotNull
-    private String status;
+    String userName;
 
     @NotNull
-    private String description;
+    Long requestId;
 
     @NotNull
-    private boolean roleChange;
+    String description;
+
+    @NotNull
+    String status;
 
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
@@ -40,5 +37,4 @@ public class ProfileRequestDTO {
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant modifiedDate;
-
 }
