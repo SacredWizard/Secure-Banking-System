@@ -98,19 +98,19 @@ public class User implements Serializable {
 
     private Instant expireOn;
 
-    @JsonManagedReference
+    @JsonManagedReference(value = "user")
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     private Set<Account> accounts = new HashSet<>();
 
-    @JsonManagedReference
+    @JsonManagedReference(value = "representative")
     @OneToOne(mappedBy = "representative")
     private Organization organization;
 
-    @JsonManagedReference
+    @JsonManagedReference(value = "requestBy")
     @OneToMany(mappedBy = "requestBy", cascade = CascadeType.ALL)
     private Set<Request> requests = new HashSet<>();
 
-    @JsonManagedReference
+    @JsonManagedReference(value = "linkedUser")
     @OneToOne(mappedBy = "linkedUser")
     private Session session;
 

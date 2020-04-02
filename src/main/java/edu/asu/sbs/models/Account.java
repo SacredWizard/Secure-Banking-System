@@ -57,6 +57,10 @@ public class Account implements Serializable {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
+    @NotNull
+    @Column(nullable = false)
+    private boolean defaultAccount;
+
     @JsonManagedReference
     @OneToMany(mappedBy = "account")
     private Set<TransactionAccountLog> accountLogs = new HashSet<>();

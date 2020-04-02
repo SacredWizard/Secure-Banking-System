@@ -21,4 +21,8 @@ public interface AccountRepository extends CrudRepository<Account, Long> {
     List<Account> findByUserAndLock(@Param("user") User user);
 
     Optional<Account> getAccountById(Long id);
+
+    Optional<Account> findByAccountNumber(String accountNumber);
+
+    Optional<Account> findAccountByUserAndDefaultAccount(User user,boolean defaultAccount);
 }

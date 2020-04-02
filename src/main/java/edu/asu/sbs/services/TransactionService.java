@@ -26,14 +26,16 @@ public class TransactionService {
     private final ChequeRepository chequeRepository;
     private final RequestRepository requestRepository;
     private final UserService userService;
+    private final TransactionHyperledgerService transactionHyperledgerService;
 
-    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository, TransactionAccountLogRepository transactionAccountLogRepository, ChequeRepository chequeRepository, RequestRepository requestRepository, UserService userService) {
+    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository, TransactionAccountLogRepository transactionAccountLogRepository, ChequeRepository chequeRepository, RequestRepository requestRepository, UserService userService, TransactionHyperledgerService transactionHyperledgerService) {
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
         this.transactionAccountLogRepository = transactionAccountLogRepository;
         this.chequeRepository = chequeRepository;
         this.requestRepository = requestRepository;
         this.userService = userService;
+        this.transactionHyperledgerService = transactionHyperledgerService;
     }
 
     public List<TransactionDTO> getTransactions() {
@@ -126,6 +128,9 @@ public class TransactionService {
                     request.setRequestBy(userService.getCurrentUser());
                     requestRepository.save(request);
                 }
+//                if (transaction.getStatus().equals(StatusType.APPROVED)) {
+                    transactionHyperledgerService.save(transaction);
+//                }
                 return transaction;
             }
         }
@@ -182,6 +187,9 @@ public class TransactionService {
                     transactionAccountLog.setLogDescription("CHEQUE CLEARED");
                     cheque.setDeleted(true);
                     transactionRepository.save(transaction);
+//                    if (transaction.getStatus().equals(StatusType.APPROVED)) {
+                        transactionHyperledgerService.save(transaction);
+//                    }
                     chequeRepository.save(cheque);
                     transactionAccountLogRepository.save(transactionAccountLog);
                     accountRepository.save(toAccount);

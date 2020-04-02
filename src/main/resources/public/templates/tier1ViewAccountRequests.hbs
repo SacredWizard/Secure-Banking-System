@@ -24,6 +24,7 @@
                     <td align="center">{{ userId }}</td>
                     <td align="center">{{ description }}</td>
                     <td align="center">
+                    {{#eq transactionStatus "PENDING"}}
                         <form method="post" action="/api/v1/tier1/approveModification" class="inline">
                             <input type="text" name="id" value="{{requestId}}" style="display: none">
                             <input id="update" class="btn btn-primary" type="submit" name="approve"
@@ -34,6 +35,9 @@
                             <input id="delete" class="btn btn-danger" type="submit" name="deny"
                                    value="Deny"/>
                         </form>
+                    {{ else }}
+                        -
+                    {{/eq}}
                     </td>
                 </tr>
             {{/each}}

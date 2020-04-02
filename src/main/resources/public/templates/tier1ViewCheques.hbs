@@ -26,6 +26,7 @@
                     <td align="center">{{ transactionStatus }}</td>
                     <td align="center">{{ chequeAmount }}</td>
                     <td align="center">
+                    {{#eq transactionStatus "PENDING"}}
                         <form method="post" action="/api/v1/tier1/clearCheque" class="inline">
                             <input type="text" name="chequeId" value="{{chequeId}}" style="display: none">
                             <input id="update" class="btn btn-primary" type="submit" name="approve"
@@ -36,6 +37,9 @@
                             <input id="delete" class="btn btn-danger" type="submit" name="deny"
                                    value="Deny"/>
                         </form>
+                    {{ else }}
+                        -
+                    {{/eq}}
                     </td>
                 </tr>
             {{/each}}

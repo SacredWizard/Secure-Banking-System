@@ -41,4 +41,8 @@ public interface UserRepository extends CrudRepository<User, Long> {
     boolean findByPhoneNumber(String ph);
 
     Optional<User> findByIdAndIsActive(Long id, boolean isActive);
+
+    Optional<User> findOneByEmailAndIsActive(String email, boolean isActive);
+
+    Optional<User> findOneByPhoneNumberAndIsActive(String phoneNumber, boolean isActive);
 }

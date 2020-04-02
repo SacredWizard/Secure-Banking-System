@@ -158,6 +158,7 @@ public class Tier2Controller {
         return template.apply(handlebarsTemplateLoader.getContext(result));
     }
 
+    /*
     @GetMapping("/editUser/{id}")
     public String modifyUserDetail(UserDTO userDTO) throws Exceptions, IOException {
 
@@ -171,6 +172,7 @@ public class Tier2Controller {
             throw new Exceptions("404", " ");
         }
     }
+    */
 
     @PostMapping("/approveTransaction")
     public void approveEdit(Long id, HttpServletResponse response) throws IOException {
@@ -208,21 +210,22 @@ public class Tier2Controller {
     }
 
     @PostMapping("/modifyAccount")
-    public void modifyUserAccount(Long accountId, AccountType type) throws IllegalStateException {
+    public void modifyUserAccount(Long id, AccountType accountType, HttpServletResponse response) throws IllegalStateException, IOException {
 
-        switch (type) {
+        switch (accountType) {
             case CHECKING:
-                accountService.updateAccountType(accountId, AccountType.CHECKING);
+                accountService.updateAccountType(id, AccountType.CHECKING);
                 break;
             case SAVINGS:
-                accountService.updateAccountType(accountId, AccountType.SAVINGS);
+                accountService.updateAccountType(id, AccountType.SAVINGS);
                 break;
             case CURRENT:
-                accountService.updateAccountType(accountId, AccountType.CURRENT);
+                accountService.updateAccountType(id, AccountType.CURRENT);
                 break;
             default:
-                throw new IllegalStateException("Unexpected value: " + type);
+                throw new IllegalStateException("Unexpected value: " + accountType);
         }
+        response.sendRedirect("transactions");
     }
 
     @PostMapping("/closeAccount")
@@ -235,7 +238,7 @@ public class Tier2Controller {
         response.sendRedirect("transactions");
     }
 
-    @PostMapping("/approveAdditionalAccountReq")
+    @PostMapping("/approveCreateAccountReq")
     public void approveAdditionalAccount(Long id, CreateAccountDTO createAccountDTO, HttpServletResponse response) throws IOException {
 
         Optional<Request> request = requestService.getRequest(id);
@@ -248,7 +251,7 @@ public class Tier2Controller {
         response.sendRedirect("transactions");
     }
 
-    @PostMapping("/denyAdditionalAccountReq")
+    @PostMapping("/denyCreateAccountReq")
     public void declineAdditionalAccount(Long id, CreateAccountDTO createAccountDTO, HttpServletResponse response) throws IOException {
 
         Optional<Request> request = requestService.getRequest(id);
@@ -261,6 +264,7 @@ public class Tier2Controller {
         response.sendRedirect("transactions");
     }
 
+    /*
     @PostMapping("/approveNewAccountReq")
     public void approveEdit(Long id, CreateAccountDTO createAccountDTO, HttpServletResponse response) throws IOException {
 
@@ -286,5 +290,6 @@ public class Tier2Controller {
         });
         response.sendRedirect("transactions");
     }
+    */
 
 }
