@@ -112,13 +112,15 @@ public class CustomerController {
         Template template = handlebarsTemplateLoader.getTemplate("extUserRequestNewAccount");
         return template.apply("");
     }
+
     @PostMapping("/requestAccount")
     @ResponseStatus(HttpStatus.CREATED)
-    String createAccount(NewAccountRequestDTO newAccountRequestDTO) throws IOException {
+    public String createAccount(NewAccountRequestDTO newAccountRequestDTO) throws IOException {
         User currentUser = userService.getCurrentUser();
         NewAccountRequestDTO newAccountResponseDTO = accountService.createAccount(currentUser, newAccountRequestDTO);
         return getAccountRequests();
     }
+
     @GetMapping("/transferFunds")
     @ResponseBody
     public String getTransferFundsTemplate() throws IOException {
