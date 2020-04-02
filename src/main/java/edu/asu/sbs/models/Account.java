@@ -32,12 +32,6 @@ public class Account implements Serializable {
     private Long id;
 
     @NotNull
-    @Pattern(regexp = Constants.ACCOUNT_NUMBER_REGEX)
-    @Column(unique = true, nullable = false, length = 17)
-    @Size(min = 1, max = 17)
-    private String accountNumber;
-
-    @NotNull
     @Column(nullable = false, length = 50)
     @Enumerated(EnumType.STRING)
     @Convert(converter = AccountTypeAttributeConverter.class)
@@ -84,5 +78,13 @@ public class Account implements Serializable {
     @JsonManagedReference
     @OneToMany(mappedBy = "linkedAccount")
     private Set<Request> request = new HashSet<>();
+
+    public void setAccountNumber(String accountNumberString) {
+        id = Long.parseLong(accountNumberString);
+    }
+
+    public String getAccountNumber() {
+        return id.toString();
+    }
 
 }

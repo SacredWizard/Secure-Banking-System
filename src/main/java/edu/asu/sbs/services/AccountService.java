@@ -2,20 +2,26 @@ package edu.asu.sbs.services;
 
 import com.google.common.collect.Lists;
 import edu.asu.sbs.config.UserType;
+import edu.asu.sbs.config.RequestType;
+import edu.asu.sbs.config.StatusType;
 import edu.asu.sbs.errors.GenericRuntimeException;
 import edu.asu.sbs.globals.AccountType;
 import edu.asu.sbs.globals.CreditDebitType;
 import edu.asu.sbs.models.Account;
+import edu.asu.sbs.models.Request;
 import edu.asu.sbs.models.User;
 import edu.asu.sbs.repositories.AccountRepository;
+import edu.asu.sbs.repositories.RequestRepository;
 import edu.asu.sbs.repositories.TransactionAccountLogRepository;
-import edu.asu.sbs.services.dto.CreateAccountDTO;
+import edu.asu.sbs.services.dto.NewAccountRequestDTO;
 import edu.asu.sbs.services.dto.CreditDebitDTO;
 import edu.asu.sbs.services.dto.ViewAccountDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Optional;
@@ -29,10 +35,12 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
     private final TransactionAccountLogRepository transactionAccountLogRepository;
+    private RequestRepository accountRequestRepository;
 
-    public AccountService(AccountRepository accountRepository, TransactionAccountLogRepository transactionAccountLogRepository) {
+    public AccountService(AccountRepository accountRepository, TransactionAccountLogRepository transactionAccountLogRepository, RequestRepository accountRequestRepository) {
         this.accountRepository = accountRepository;
         this.transactionAccountLogRepository = transactionAccountLogRepository;
+        this.accountRequestRepository = accountRequestRepository;
     }
 
     public List<ViewAccountDTO> getAccounts() {
@@ -52,14 +60,26 @@ public class AccountService {
         return accountRepository.findAccountByUserAndDefaultAccount(user, true).get();
     }
 
-    public Account createAccount(User customer, CreateAccountDTO createAccountDTO) {
+    public NewAccountRequestDTO createAccount(User customer, NewAccountRequestDTO newAccountRequestDTO) {
         Account newAccount = new Account();
-        newAccount.setAccountBalance(createAccountDTO.getInitialDeposit());
-        newAccount.setAccountNumber(createAccountDTO.getAccountNumber());
-        newAccount.setAccountType(createAccountDTO.getAccountType());
+        newAccount.setAccountBalance(newAccountRequestDTO.getInitialDeposit());
+        newAccount.setAccountType(newAccountRequestDTO.getAccountType());
         newAccount.setUser(customer);
+        if(newAccountRequestDTO.getAccountNumber() != null) {
+            //If we allow user to set her desired account number, then we need to handle if DB save fails
+            newAccount.setAccountNumber(newAccountRequestDTO.getAccountNumber());
+        }
         accountRepository.save(newAccount);
-        return newAccount;
+        Request accountRequest = new Request();
+        accountRequest.setRequestType(RequestType.CREATE_NEW_ACCOUNT);
+        accountRequest.setCreatedDate(Instant.now());
+        accountRequest.setDescription("New account request by user "+customer.getUserName());
+        accountRequest.setLinkedAccount(newAccount);
+        accountRequest.setRequestBy(customer);
+        accountRequest.setStatus(StatusType.PENDING);
+        accountRequestRepository.save(accountRequest);
+        newAccountRequestDTO.setAccountNumber(newAccount.getAccountNumber());
+        return newAccountRequestDTO;
     }
 
     public void credit(Account account, Double amount) throws Exception {
@@ -140,51 +160,16 @@ public class AccountService {
         accountRepository.delete(account);
     }
 
-    // generate account number
-    public String getNumericString(int n) {
-        String AlphaNumericString = "0123456789";
-
-        StringBuilder sb = new StringBuilder(n);
-
-        for (int i = 0; i < n; i++) {
-            int index = (int) (AlphaNumericString.length() * Math.random());
-
-            sb.append(AlphaNumericString.charAt(index));
+    public List<NewAccountRequestDTO> getPendingAccountsForUser(User currentUser) {
+        List<Account> pendingAccounts = accountRepository.findByUserAndIsActive(currentUser, false);
+        List<NewAccountRequestDTO> pendingAccountDTOList= new ArrayList<NewAccountRequestDTO>();
+        for(Account pendingAccount:pendingAccounts) {
+            NewAccountRequestDTO pendingAccountDTO = new NewAccountRequestDTO();
+            pendingAccountDTO.setAccountNumber(pendingAccount.getAccountNumber());
+            pendingAccountDTO.setAccountType(pendingAccount.getAccountType());
+            pendingAccountDTO.setInitialDeposit(pendingAccount.getAccountBalance());
+            pendingAccountDTOList.add(pendingAccountDTO);
         }
-        return sb.toString();
+        return pendingAccountDTOList;
     }
-
-    public void createDefaultAccount(User newCustomer) {
-
-        // Give a default "CHECKING" account to the user with $500 in his account.
-        String accountNum = getNumericString(MAX_ACCOUNT_NUM_LEN);
-
-        // check if account number is existing.
-        AtomicBoolean accountCreation = new AtomicBoolean(true);
-        accountRepository.findByAccountNumber(accountNum).ifPresent(account -> {
-            accountCreation.set(false);
-            try {
-                throw new GeneralSecurityException("Account number already exists");
-            } catch (GeneralSecurityException e) {
-                e.printStackTrace();
-            }
-        });
-        /* if account number is unique, just create account and return the user. */
-        if (accountCreation.get() == true) {
-        Account newAccount = new Account();
-        newAccount.setAccountNumber(accountNum);
-        newAccount.setAccountBalance(INITIAL_DEPOSIT_AMOUNT);
-        if (newCustomer.getUserType() == UserType.MERCHANT_ROLE) {
-            newAccount.setAccountType(AccountType.CURRENT);
-        } else {
-            newAccount.setAccountType(DEFAULT_ACCOUNT_TYPE);
-        }
-        newAccount.setActive(true);
-        newAccount.setUser(newCustomer);
-        newAccount.setDefaultAccount(true);
-        accountRepository.save(newAccount);
-        log.info(newAccount.toString());
-        }
-    }
-
 }

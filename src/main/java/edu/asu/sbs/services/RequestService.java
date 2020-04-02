@@ -7,13 +7,21 @@ import edu.asu.sbs.config.TransactionStatus;
 import edu.asu.sbs.config.TransactionType;
 import edu.asu.sbs.errors.GenericRuntimeException;
 import edu.asu.sbs.models.*;
+import edu.asu.sbs.repositories.RequestRepository;
+import edu.asu.sbs.repositories.TransactionAccountLogRepository;
+import edu.asu.sbs.repositories.TransactionRepository;
+import edu.asu.sbs.repositories.UserRepository;
 import edu.asu.sbs.repositories.*;
+import edu.asu.sbs.services.dto.DetailedNewAccountRequestDTO;
+import edu.asu.sbs.services.dto.NewAccountRequestDTO;
 import edu.asu.sbs.services.dto.ProfileRequestDTO;
 import edu.asu.sbs.services.dto.Tier2RequestsDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -154,16 +162,21 @@ public class RequestService {
 
     @Transactional
     public void updateAccountCreationRequest(Request request, User approver, String requestType, String action) {
+        Account account = request.getLinkedAccount();
         request.setRequestType(requestType);
         request.setApprovedBy(approver);
         request.setStatus(action);
         request.setModifiedDate(Instant.now());
+        request.setDeleted(true);
+        if(StatusType.DECLINED.equals(action));
+            request.setLinkedAccount(null);
         requestRepository.save(request);
 
-        Account account = request.getLinkedAccount();
 
         switch (action) {
             case StatusType.APPROVED:
+                if(accountService.getAccountsForUser(request.getRequestBy()).size()==0)
+                    account.setDefaultAccount(true);
                 account.setActive(true);
                 accountRepository.save(account);
                 break;
@@ -238,6 +251,23 @@ public class RequestService {
         request.setModifiedDate(Instant.now());
         request.setDeleted(true);
         requestRepository.save(request);
+    }
+
+    public List<DetailedNewAccountRequestDTO> getAllNewAccountRequests() {
+        List<Request> newAccountRequests = requestRepository.findByRequestTypeInAndIsDeleted(Collections.singletonList(RequestType.CREATE_NEW_ACCOUNT), false);
+        List<DetailedNewAccountRequestDTO> detailedNewAccountRequestDTOList = new ArrayList<>();
+        for(Request newAccountRequest:newAccountRequests) {
+            DetailedNewAccountRequestDTO dtoNewAccountRequest = new DetailedNewAccountRequestDTO();
+            Account account = newAccountRequest.getLinkedAccount();
+            dtoNewAccountRequest.setAccountNumber(account.getAccountNumber());
+            dtoNewAccountRequest.setAccountType(account.getAccountType());
+            dtoNewAccountRequest.setInitialDeposit(account.getAccountBalance());
+            dtoNewAccountRequest.setUserName(account.getUser().getUserName());
+            dtoNewAccountRequest.setRequestId(newAccountRequest.getRequestId());
+            detailedNewAccountRequestDTOList.add(dtoNewAccountRequest);
+
+        }
+        return detailedNewAccountRequestDTOList;
     }
 
     /*

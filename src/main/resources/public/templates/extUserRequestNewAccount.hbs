@@ -1,11 +1,11 @@
 
 {{#partial "body"}}
     <div>
-    <form class="form-horizontal" role="form">
+    <form class="form-horizontal" role="form" method="POST" action="/api/v1/customer/requestAccount">
         <div class="form-group">
             <label class="col-lg-3 control-label">Initial Amount: </label>
             <div class="col-lg-8">
-                <input class="form-control" type="text" id="intialAmount" name="initialAmount">
+                <input class="form-control" type="text" id="initialDeposit" name="initialDeposit">
             </div>
         </div>
         <div class="form-group">
@@ -20,7 +20,7 @@
         </div>
         <div class="form-group">
             <div class="col-md-8">
-                <input type="submit" id="save" class="btn btn-primary" value="request">
+                <input type="submit" id="save" class="btn btn-primary" value="Request">
             </div>
         </div>
     </form>

@@ -19,9 +19,7 @@ import edu.asu.sbs.services.AccountService;
 import edu.asu.sbs.services.RequestService;
 import edu.asu.sbs.services.TransactionService;
 import edu.asu.sbs.services.UserService;
-import edu.asu.sbs.services.dto.ProfileRequestDTO;
-import edu.asu.sbs.services.dto.Tier2RequestsDTO;
-import edu.asu.sbs.services.dto.UserDTO;
+import edu.asu.sbs.services.dto.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -213,30 +211,42 @@ public class Tier2Controller {
         response.sendRedirect("transactions");
     }
 
-    @PostMapping("/approveCreateAccountReq")
-    public void approveAdditionalAccount(Long id, HttpServletResponse response) throws IOException {
+    @PostMapping("/approveNewAccountReq")
+    public void approveNewAccountRequest(Long requestId, HttpServletResponse response) throws IOException {
 
-        Optional<Request> request = requestService.getRequest(id);
+        Optional<Request> request = requestService.getRequest(requestId);
         User user = userService.getCurrentUser();
         request.ifPresent(req -> {
-            if (RequestType.CREATE_ADDITIONAL_ACCOUNT.equals(req.getRequestType()) && req.getStatus().equals(StatusType.PENDING)) {
-                requestService.updateAccountCreationRequest(req, user, RequestType.CREATE_ADDITIONAL_ACCOUNT, StatusType.APPROVED);
+            if (RequestType.CREATE_NEW_ACCOUNT.equals(req.getRequestType()) && req.getStatus().equals(StatusType.PENDING)) {
+                requestService.updateAccountCreationRequest(req, user, RequestType.CREATE_NEW_ACCOUNT, StatusType.APPROVED);
             }
         });
-        response.sendRedirect("transactions");
+        response.sendRedirect("newAccountRequests");
+    }
+    @GetMapping("/newAccountRequests")
+    public String getnewAccountRequests() throws IOException {
+        List<DetailedNewAccountRequestDTO> newAccountRequests = requestService.getAllNewAccountRequests();
+        HashMap<String, List<DetailedNewAccountRequestDTO>> resultMap = Maps.newHashMap();
+        resultMap.put("result", newAccountRequests);
+        JavaTimeModule module = new JavaTimeModule();
+        mapper.registerModule(module);
+        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        JsonNode result = mapper.valueToTree(resultMap);
+        Template template = handlebarsTemplateLoader.getTemplate("tier2ViewUserRequests");
+        return template.apply(handlebarsTemplateLoader.getContext(result));
     }
 
-    @PostMapping("/denyCreateAccountReq")
-    public void declineAdditionalAccount(Long id, HttpServletResponse response) throws IOException {
+    @PostMapping("/denyNewAccountReq")
+    public void denyNewAccountRequest(Long requestId, HttpServletResponse response) throws IOException {
 
-        Optional<Request> request = requestService.getRequest(id);
+        Optional<Request> request = requestService.getRequest(requestId);
         User user = userService.getCurrentUser();
         request.ifPresent(req -> {
-            if (RequestType.CREATE_ADDITIONAL_ACCOUNT.equals(req.getRequestType()) && req.getStatus().equals(StatusType.PENDING)) {
-                requestService.updateAccountCreationRequest(req, user, RequestType.CREATE_ADDITIONAL_ACCOUNT, StatusType.DECLINED);
+            if (RequestType.CREATE_NEW_ACCOUNT.equals(req.getRequestType()) && req.getStatus().equals(StatusType.PENDING)) {
+                requestService.updateAccountCreationRequest(req, user, RequestType.CREATE_NEW_ACCOUNT, StatusType.DECLINED);
             }
         });
-        response.sendRedirect("transactions");
+        response.sendRedirect("newAccountRequests");
     }
 
     @PostMapping("/raiseProfileUpdateRequest")

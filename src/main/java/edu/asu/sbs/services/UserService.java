@@ -142,7 +142,6 @@ public class UserService {
 
         Account a = new Account();
         a.setAccountBalance(1000.00);
-        a.setAccountNumber("12345");
         a.setAccountType(AccountType.SAVINGS);
         a.setActive(true);
         a.setUser(userRepository.findOneWithUserTypeByUserName("user2").orElse(null));
@@ -150,19 +149,17 @@ public class UserService {
 
         a = new Account();
         a.setAccountBalance(1000.00);
-        a.setAccountNumber("12347");
         a.setAccountType(AccountType.CHECKING);
         a.setActive(true);
         a.setUser(userRepository.findOneWithUserTypeByUserName("user2").orElse(null));
         accountRepository.save(a);
 
-        a = new Account();
-        a.setAccountBalance(1000.00);
-        a.setAccountNumber("12346");
-        a.setAccountType(AccountType.CHECKING);
-        a.setActive(true);
-        a.setUser(userRepository.findOneWithUserTypeByUserName("user1").orElse(null));
-        accountRepository.save(a);
+        Account b = new Account();
+        b.setAccountBalance(1000.00);
+        b.setAccountType(AccountType.CHECKING);
+        b.setActive(true);
+        b.setUser(userRepository.findOneWithUserTypeByUserName("user1").orElse(null));
+        accountRepository.save(b);
 
         Transaction t = new Transaction();
         t.setCreatedTime(Instant.now());
@@ -171,8 +168,8 @@ public class UserService {
         t.setTransactionAmount(100.0);
         t.setModifiedTime(Instant.now());
         t.setTransactionType(TransactionType.DEBIT);
-        t.setFromAccount(accountRepository.findOneByAccountNumberEquals("12346").orElse(null));
-        t.setToAccount(accountRepository.findOneByAccountNumberEquals("12347").orElse(null));
+        t.setFromAccount(accountRepository.findById(a.getId()).orElse(null));
+        t.setToAccount(accountRepository.findById(b.getId()).orElse(null));
         TransactionAccountLog transactionAccountLog = new TransactionAccountLog();
         transactionAccountLog.setLogDescription(t.getDescription());
         TransactionAccountLog tlog = transactionAccountLogRepository.save(transactionAccountLog);
@@ -255,8 +252,6 @@ public class UserService {
     public Optional<User> activateRegistration(String key) {
         Optional<User> optionalUser = userRepository.findOneByActivationKey(key);
         log.debug("Activating user for activation key {}", key);
-        // create a default account for the user
-        accountService.createDefaultAccount(optionalUser.get());
         return optionalUser
                 .map(user -> {
                     user.setActive(true);

@@ -107,6 +107,19 @@ public class CustomerController {
         response.sendRedirect("home");
     }
 
+    @GetMapping("/requestNewAccount")
+    @ResponseBody
+    public String getRequestNewAccountTemplate() throws IOException {
+        Template template = handlebarsTemplateLoader.getTemplate("extUserRequestNewAccount");
+        return template.apply("");
+    }
+    @PostMapping("/requestAccount")
+    @ResponseStatus(HttpStatus.CREATED)
+    String createAccount(NewAccountRequestDTO newAccountRequestDTO) throws IOException {
+        User currentUser = userService.getCurrentUser();
+        NewAccountRequestDTO newAccountResponseDTO = accountService.createAccount(currentUser, newAccountRequestDTO);
+        return getAccountRequests();
+    }
     @GetMapping("/transferFunds")
     @ResponseBody
     public String getTransferFundsTemplate() throws IOException {
@@ -189,22 +202,18 @@ public class CustomerController {
 
     }
 
-    @PostMapping("/createAccount")
-    @ResponseStatus(HttpStatus.CREATED)
-    void createAccount(@RequestBody CreateAccountDTO createAccountDTO) {
-        User currentUser = userService.getCurrentUser();
-        accountService.createAccount(currentUser, createAccountDTO);
-    }
+    @GetMapping("/newAccountRequests")
+    @ResponseBody
+    public String getAccountRequests() throws IOException {
 
-    /*
-    @PostMapping("/createAdditoinalAccRequest")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public void createAdditoinalRequest(CreateAccountDTO createAccountDTO, HttpServletResponse response) throws IOException {
-        if (userService.getCurrentUser().getUserType().equals(UserType.USER_ROLE) || userService.getCurrentUser().getUserType().equals(UserType.MERCHANT_ROLE)) {
-            requestService.createAdditionalAccountRequest(createAccountDTO, RequestType.CREATE_ADDITIONAL_ACCOUNT);
-        }
-        response.sendRedirect("home");
-    }*/
+        User currentUser = userService.getCurrentUser();
+        List<NewAccountRequestDTO> newAccountRequests = accountService.getPendingAccountsForUser(currentUser);
+        HashMap<String, List<NewAccountRequestDTO>> resultMap = new HashMap<>();
+        resultMap.put("newAccountRequests", newAccountRequests);
+        JsonNode result = mapper.valueToTree(resultMap);
+        Template template = handlebarsTemplateLoader.getTemplate("extUserViewNewAccountRequests");
+        return template.apply(handlebarsTemplateLoader.getContext(result));
+    }
 
     @PostMapping("/raiseProfileUpdateRequest")
     @ResponseStatus(HttpStatus.ACCEPTED)
@@ -227,5 +236,11 @@ public class CustomerController {
         }else{
             throw new GenericRuntimeException("You can only modify your account");
         }
+    }
+
+    @PostMapping("/modifyAccount")
+    @ResponseBody
+    public String changeAccountType() throws IOException {
+        return "";
     }
 }
