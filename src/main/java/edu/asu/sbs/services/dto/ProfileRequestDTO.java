@@ -19,6 +19,9 @@ public class ProfileRequestDTO {
     private String email;
 
     @NotNull
+    private Long userId;
+
+    @NotNull
     private Long requestId;
 
     @NotNull

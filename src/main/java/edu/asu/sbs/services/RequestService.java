@@ -53,13 +53,14 @@ public class RequestService {
             RequestDTO.setDescription(request.getDescription());
             RequestDTO.setCreatedDate(request.getCreatedDate());
             RequestDTO.setModifiedDate(request.getModifiedDate());
+            RequestDTO.setUserId(request.getRequestBy().getId());
             RequestDTOList.add(RequestDTO);
         }
         return RequestDTOList;
     }
 
-    public Optional<Request> getRequest(Long id) {
-        return requestRepository.findOneByRequestId(id);
+    public Optional<Request> getRequest(Long RequestId) {
+        return requestRepository.findOneByRequestId(RequestId);
     }
 
     public List<Tier2RequestsDTO> getAllTier2Requests() {
@@ -186,6 +187,7 @@ public class RequestService {
             RequestDTO.setDescription(request.getDescription());
             RequestDTO.setCreatedDate(request.getCreatedDate());
             RequestDTO.setModifiedDate(request.getModifiedDate());
+            RequestDTO.setUserId(request.getRequestBy().getId());
             RequestDTOList.add(RequestDTO);
         }
         return RequestDTOList;
@@ -193,7 +195,6 @@ public class RequestService {
 
     @Transactional
     public void createProfileUpdateRequest(ProfileRequestDTO requestDTO, String requestType) {
-
         Request request = new Request();
         request.setCreatedDate(Instant.now());
         request.setDeleted(false);
@@ -235,6 +236,7 @@ public class RequestService {
         request.setStatus(status);
         request.setApprovedBy(approver);
         request.setModifiedDate(Instant.now());
+        request.setDeleted(true);
         requestRepository.save(request);
     }
 

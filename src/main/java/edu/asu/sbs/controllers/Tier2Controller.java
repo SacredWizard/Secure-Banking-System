@@ -251,7 +251,7 @@ public class Tier2Controller {
 
     @GetMapping("/raiseChangeRoleRequest")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    private void createChangeRoleRequestPost(HttpServletResponse response) throws IOException {
+    public void createChangeRoleRequestPost(HttpServletResponse response) throws IOException {
         if (userService.getCurrentUser().getUserType().equals(UserType.EMPLOYEE_ROLE2)) {
             requestService.createChangeRoleRequest(RequestType.TIER2_TO_TIER1);
         }

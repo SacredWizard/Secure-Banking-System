@@ -157,9 +157,10 @@ public class Tier1Controller {
         return template.apply(handlebarsTemplateLoader.getContext(result));
     }
 
+
     @PostMapping("/approveUpdateUserProfile")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    private void approveUserProfile(Long requestId) {
+    public void approveUserProfile(Long requestId, HttpServletResponse response) throws IOException {
         System.out.println(requestId);
         Optional<Request> request = requestService.getRequest(requestId);
         User user = userService.getCurrentUser();
@@ -168,10 +169,11 @@ public class Tier1Controller {
                 requestService.updateUserProfile(req, user, RequestType.UPDATE_USER_PROFILE, StatusType.APPROVED);
             }
         });
+        response.sendRedirect("viewAccountRequests");
     }
 
     @PostMapping("/declineUpdateUserProfile")
-    private void declineUserProfile(Long requestId) {
+    public void declineUserProfile(Long requestId, HttpServletResponse response) throws IOException {
         Optional<Request> request = requestService.getRequest(requestId);
         User user = userService.getCurrentUser();
         request.ifPresent(req -> {
@@ -179,12 +181,13 @@ public class Tier1Controller {
                 requestService.updateUserProfile(req, user, RequestType.UPDATE_USER_PROFILE, StatusType.DECLINED);
             }
         });
+        response.sendRedirect("viewAccountRequests");
     }
 
     @PostMapping("/raiseProfileUpdateRequest")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void raiseProfileUpdateRequest(ProfileRequestDTO requestDTO, HttpServletResponse response) throws IOException {
-        if (userService.getCurrentUser().getUserType() == UserType.EMPLOYEE_ROLE1) {
+        if (userService.getCurrentUser().getUserType().equals(UserType.EMPLOYEE_ROLE1)) {
             requestService.createProfileUpdateRequest(requestDTO, RequestType.UPDATE_EMP_PROFILE);
         }
         response.sendRedirect("transactions");
@@ -192,7 +195,7 @@ public class Tier1Controller {
 
     @GetMapping("/raiseChangeRoleRequest")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    private void createChangeRoleRequest(HttpServletResponse response) throws IOException {
+    public void createChangeRoleRequest(HttpServletResponse response) throws IOException {
         if (UserType.EMPLOYEE_ROLE1.equals(userService.getCurrentUser().getUserType())) {
             requestService.createChangeRoleRequest(RequestType.TIER1_TO_TIER2);
         }
