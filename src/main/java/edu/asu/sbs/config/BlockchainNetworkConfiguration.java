@@ -23,6 +23,7 @@ import java.io.IOException;
 @Configuration
 public class BlockchainNetworkConfiguration {
 
+
     @Value("classpath:fabricconnections/connection-profile.json")
     private transient Resource connectionFile;
 
@@ -80,8 +81,8 @@ public class BlockchainNetworkConfiguration {
         return hfClient;
     }
 
-    @Bean(name = "channel1")
-    public Channel createChannel1() throws Exception {
+    @Bean(name = "transactionchannel")
+    public Channel createTransactionchannel() throws Exception {
         HFClient hfClient = createHFClient();
         Channel newChannel = hfClient.loadChannelFromConfig(BlockchainNetworkAttributes.CHANNEL_1_NAME, createNetworkConfig());
         if (newChannel == null) {

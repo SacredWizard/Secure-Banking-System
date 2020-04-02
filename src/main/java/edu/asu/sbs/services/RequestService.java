@@ -28,13 +28,15 @@ public class RequestService {
     private final TransactionAccountLogRepository transactionAccountLogRepository;
     private final AccountService accountService;
     private final UserRepository userRepository;
+    private final TransactionHyperledgerService transactionHyperledgerService;
 
-    public RequestService(RequestRepository requestRepository, TransactionRepository transactionRepository, TransactionAccountLogRepository transactionAccountLogRepository, AccountService accountService, UserRepository userRepository) {
+    public RequestService(RequestRepository requestRepository, TransactionRepository transactionRepository, TransactionAccountLogRepository transactionAccountLogRepository, AccountService accountService, UserRepository userRepository, TransactionHyperledgerService transactionHyperledgerService) {
         this.requestRepository = requestRepository;
         this.transactionRepository = transactionRepository;
         this.transactionAccountLogRepository = transactionAccountLogRepository;
         this.accountService = accountService;
         this.userRepository = userRepository;
+        this.transactionHyperledgerService = transactionHyperledgerService;
     }
 
     public List<Request> getAllAdminRequests() {
@@ -112,6 +114,9 @@ public class RequestService {
         transactionAccountLog.setLogDescription(transactionAccountLog.getLogDescription() + "\n Transaction Approved on " + Instant.now());
         transactionAccountLogRepository.save(transactionAccountLog);
         transactionRepository.save(transaction);
+        if (transaction.getStatus().equals(StatusType.APPROVED)) {
+            transactionHyperledgerService.save(transaction);
+        }
         requestRepository.save(request);
     }
 

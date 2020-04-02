@@ -25,7 +25,7 @@ public class Transaction implements Serializable {
     private Long transactionId;
 
     @JsonIgnore
-    private static final String DOC_TYPE = "transaction";
+    private static final String docType = "transaction";
 
     @NotNull
     @Column(nullable = false, length = 50)
