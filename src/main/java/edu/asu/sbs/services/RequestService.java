@@ -165,7 +165,7 @@ public class RequestService {
         request.setStatus(action);
         request.setModifiedDate(Instant.now());
         request.setDeleted(true);
-        if(StatusType.DECLINED.equals(action));
+        if (StatusType.DECLINED.equals(action))
             request.setLinkedAccount(null);
         requestRepository.save(request);
 
@@ -267,15 +267,15 @@ public class RequestService {
         return detailedNewAccountRequestDTOList;
     }
 
-
-    public void createAccountTypeChangeRequest(Account account, AccountType toAccount, User requestor) {
+    @Transactional
+    public void createAccountTypeChangeRequest(Account account, AccountType toAccount, User requester) {
         Request request = new Request();
         request.setCreatedDate(Instant.now());
         request.setDeleted(false);
         request.setDescription(RequestType.MODIFY_ACCOUNT_TYPE + " to " + toAccount);
         request.setStatus(TransactionStatus.PENDING);
         request.setRequestType(RequestType.MODIFY_ACCOUNT_TYPE);
-        request.setRequestBy(requestor);
+        request.setRequestBy(requester);
         request.setLinkedAccount(account);
         requestRepository.save(request);
     }
@@ -303,7 +303,7 @@ public class RequestService {
         return RequestDTOList;
     }
 
-    @javax.transaction.Transactional
+    @Transactional
     public void updateAccountType(Long requestId, AccountType accountType, String action, User approver) {
         Optional<Request> request = getRequest(requestId);
         request.ifPresent(req -> {
