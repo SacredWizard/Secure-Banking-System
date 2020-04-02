@@ -28,7 +28,7 @@
         {{else if (eq userType "EMPLOYEE_ROLE2")}}
             <form class="form-horizontal" role="form" method="post" action="/api/v1/tier2/raiseProfileUpdateRequest">
         {{else if (eq userType "ADMIN_ROLE")}}
-            <form class="form-horizontal" role="form" method="post" action="/api/v1/admin/">
+            <form class="form-horizontal" role="form" method="post" action="/api/v1/admin/details/edit">
         {{else if (eq userType "MERCHANT_ROLE")}}
         <form class="form-horizontal" role="form" method="post" action="/api/v1/merchant/">
         {{else}}
@@ -65,12 +65,12 @@
                     <input class="form-control" type="text" id="phoneNumber" name="phoneNumber" value="{{ phoneNumber }}" disabled>
                 </div>
             </div>
-            <div class="form-group">
-                <label class="col-lg-3 control-label">SSN:</label>
-                <div class="col-lg-8">
-                    <input class="form-control" type="text" id="ssn" name="ssn" value="{{ ssn }}" disabled>
-                </div>
-            </div>
+{{!--             <div class="form-group"> --}}
+{{!--                 <label class="col-lg-3 control-label">SSN:</label> --}}
+{{!--                 <div class="col-lg-8"> --}}
+{{!--                     <input class="form-control" type="text" id="ssn" name="ssn" value="{{ ssn }}" disabled> --}}
+{{!--                 </div> --}}
+{{!--             </div> --}}
             <div class="form-group">
                 <div class="col-md-8">
                     {{#block "profileUser"}}

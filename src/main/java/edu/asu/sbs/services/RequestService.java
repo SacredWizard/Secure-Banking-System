@@ -289,11 +289,9 @@ public class RequestService {
             RequestDTO.setStatus(request.getStatus());
             RequestDTO.setDescription(request.getDescription());
             RequestDTO.setCreatedDate(request.getCreatedDate());
-            RequestDTO.setModifiedDate(request.getModifiedDate());
             RequestDTO.setUserName(request.getRequestBy().getUserName());
 
             String[] toAccountType = request.getDescription().trim().split(" ");
-            System.out.println("-----------" + toAccountType[toAccountType.length - 1] + "---------------");
             RequestDTO.setToAccountType(AccountType.valueOf(toAccountType[toAccountType.length - 1]));
 
             RequestDTO.setFromAccountType(request.getLinkedAccount().getAccountType());
@@ -304,9 +302,11 @@ public class RequestService {
     }
 
     @Transactional
-    public void updateAccountType(Long requestId, AccountType accountType, String action, User approver) {
+    public void updateAccountType(Long requestId, String action, User approver) {
         Optional<Request> request = getRequest(requestId);
         request.ifPresent(req -> {
+            String[] splitter = req.getDescription().trim().split(" ");
+            AccountType accountType = AccountType.valueOf(splitter[splitter.length - 1]);
             req.setApprovedBy(approver);
             req.setModifiedDate(Instant.now());
             Account account = req.getLinkedAccount();

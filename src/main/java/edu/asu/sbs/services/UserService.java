@@ -320,20 +320,32 @@ public class UserService {
     }
 
     @Transactional
-    public Optional<User> editUser(UserDTO userDTO) {
-        return userRepository.findById(userDTO.getId())
-                .map(user -> {
-                    user.setPhoneNumber(userDTO.getPhoneNumber());
-                    user.setUserName(userDTO.getUserName());
-                    user.setFirstName(userDTO.getFirstName());
-                    user.setLastName(userDTO.getLastName());
-                    user.setDateOfBirth(userDTO.getDateOfBirth());
-                    user.setEmail(userDTO.getEmail());
-                    user.setSsn(userDTO.getSsn());
-                    user.setActive(true);
-                    userRepository.save(user);
-                    return user;
-                });
+    public void editUser(UserDTO userDTO) {
+        Optional<User> current = userRepository.findById(userDTO.getId());
+        current.ifPresent(user -> {
+            if (!userDTO.getPhoneNumber().isEmpty()) {
+                System.out.println("Changing phone num");
+                user.setPhoneNumber(userDTO.getPhoneNumber());
+            }
+            if (!userDTO.getUserName().isEmpty()) {
+                System.out.println("Changing username");
+                user.setUserName(userDTO.getUserName());
+            }
+            if (!userDTO.getFirstName().isEmpty()) {
+                System.out.println("Changing firstname");
+                user.setFirstName(userDTO.getFirstName());
+            }
+            if (!userDTO.getLastName().isEmpty()) {
+                System.out.println("Changing lastname");
+                user.setLastName(userDTO.getLastName());
+            }
+            if (!userDTO.getEmail().isEmpty()) {
+                System.out.println("Changing email");
+                user.setEmail(userDTO.getEmail());
+            }
+            user.setActive(true);
+            userRepository.save(user);
+        });
     }
 
 

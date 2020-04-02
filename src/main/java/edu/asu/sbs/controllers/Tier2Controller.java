@@ -11,7 +11,6 @@ import edu.asu.sbs.config.StatusType;
 import edu.asu.sbs.config.UserType;
 import edu.asu.sbs.errors.Exceptions;
 import edu.asu.sbs.errors.UnauthorizedAccessExcpetion;
-import edu.asu.sbs.globals.AccountType;
 import edu.asu.sbs.loader.HandlebarsTemplateLoader;
 import edu.asu.sbs.models.Request;
 import edu.asu.sbs.models.User;
@@ -191,47 +190,33 @@ public class Tier2Controller {
         mapper.registerModule(module);
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         JsonNode result = mapper.valueToTree(resultMap);
-        Template template = handlebarsTemplateLoader.getTemplate("modifyAccountTypeRequests");
+        Template template = handlebarsTemplateLoader.getTemplate("tier2ModifyAccountRequests");
         return template.apply(handlebarsTemplateLoader.getContext(result));
     }
 
     @PostMapping("/approveModifyAccount")
-    public void approveUserAccount(Long requestId, AccountType accountType, HttpServletResponse response) throws IllegalStateException, IOException {
+    public void approveUserAccount(Long requestId, HttpServletResponse response) throws IllegalStateException, IOException {
 
         User approver = userService.getCurrentUser();
-        switch (accountType) {
-            case CHECKING:
-                requestService.updateAccountType(requestId, AccountType.CHECKING, StatusType.APPROVED, approver);
-                break;
-            case SAVINGS:
-                requestService.updateAccountType(requestId, AccountType.SAVINGS, StatusType.APPROVED, approver);
-                break;
-            case CURRENT:
-                requestService.updateAccountType(requestId, AccountType.CURRENT, StatusType.APPROVED, approver);
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + accountType);
-        }
+        Optional<Request> request = requestService.getRequest(requestId);
+        request.ifPresent(req -> {
+            if (req.getStatus().equals(StatusType.PENDING)) {
+                requestService.updateAccountType(requestId, StatusType.APPROVED, approver);
+            }
+        });
         response.sendRedirect("modifyAccountRequests");
     }
 
-    @PostMapping("/approveModifyAccount")
-    public void denyUserAccount(Long requestId, AccountType accountType, HttpServletResponse response) throws IllegalStateException, IOException {
+    @PostMapping("/denyModifyAccount")
+    public void denyUserAccount(Long requestId, HttpServletResponse response) throws IllegalStateException, IOException {
 
         User approver = userService.getCurrentUser();
-        switch (accountType) {
-            case CHECKING:
-                requestService.updateAccountType(requestId, AccountType.CHECKING, StatusType.DECLINED, approver);
-                break;
-            case SAVINGS:
-                requestService.updateAccountType(requestId, AccountType.SAVINGS, StatusType.DECLINED, approver);
-                break;
-            case CURRENT:
-                requestService.updateAccountType(requestId, AccountType.CURRENT, StatusType.DECLINED, approver);
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + accountType);
-        }
+        Optional<Request> request = requestService.getRequest(requestId);
+        request.ifPresent(req -> {
+            if (req.getStatus().equals(StatusType.PENDING)) {
+                requestService.updateAccountType(requestId, StatusType.DECLINED, approver);
+            }
+        });
         response.sendRedirect("modifyAccountRequests");
     }
 

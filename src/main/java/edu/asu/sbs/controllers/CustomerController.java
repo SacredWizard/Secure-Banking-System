@@ -112,7 +112,6 @@ public class CustomerController {
         Template template = handlebarsTemplateLoader.getTemplate("extUserRequestNewAccount");
         return template.apply("");
     }
-
     @PostMapping("/requestAccount")
     @ResponseStatus(HttpStatus.CREATED)
     public String createAccount(NewAccountRequestDTO newAccountRequestDTO) throws IOException {
@@ -120,7 +119,6 @@ public class CustomerController {
         NewAccountRequestDTO newAccountResponseDTO = accountService.createAccount(currentUser, newAccountRequestDTO);
         return getAccountRequests();
     }
-
     @GetMapping("/transferFunds")
     @ResponseBody
     public String getTransferFundsTemplate() throws IOException {
@@ -241,14 +239,14 @@ public class CustomerController {
 
     @PostMapping("/modifyAccount")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void changeAccountType(Long accountId, AccountType toAccount, HttpServletResponse response) throws IOException {
-        Optional<Account> account = accountService.getAccountById(accountId);
+    public void changeAccountType(Long id, AccountType accountType, HttpServletResponse response) throws IOException {
+        Optional<Account> account = accountService.getAccountById(id);
         User requester = userService.getCurrentUser();
         account.ifPresent(acc -> {
-            if (acc.getAccountType().equals(toAccount)) {
+            if (acc.getAccountType().equals(accountType)) {
                 throw new GenericRuntimeException("Account already of the requested type");
             }
-            switch (toAccount) {
+            switch (accountType) {
                 case CURRENT:
                     requestService.createAccountTypeChangeRequest(acc, AccountType.CURRENT, requester);
                     break;
@@ -259,7 +257,7 @@ public class CustomerController {
                     requestService.createAccountTypeChangeRequest(acc, AccountType.CHECKING, requester);
                     break;
                 default:
-                    throw new GenericRuntimeException("Account Type is not correct:" + toAccount);
+                    throw new GenericRuntimeException("Account Type is not correct:" + accountType);
             }
         });
         response.sendRedirect("home");

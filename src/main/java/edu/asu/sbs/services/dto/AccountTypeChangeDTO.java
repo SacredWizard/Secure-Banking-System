@@ -34,7 +34,4 @@ public class AccountTypeChangeDTO {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant createdDate;
 
-    @NotNull
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
-    private Instant modifiedDate;
 }
