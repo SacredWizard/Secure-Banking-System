@@ -268,22 +268,4 @@ public class Tier2Controller {
         response.sendRedirect("newAccountRequests");
     }
 
-    @PostMapping("/raiseProfileUpdateRequest")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public void raiseProfileUpdateRequest(ProfileRequestDTO requestDTO, HttpServletResponse response) throws IOException {
-
-        if (userService.getCurrentUser().getUserType().equals(UserType.EMPLOYEE_ROLE2)) {
-            requestService.createProfileUpdateRequest(requestDTO, RequestType.UPDATE_EMP_PROFILE);
-        }
-        response.sendRedirect("transactions");
-    }
-
-    @GetMapping("/raiseChangeRoleRequest")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public void createChangeRoleRequestPost(HttpServletResponse response) throws IOException {
-        if (userService.getCurrentUser().getUserType().equals(UserType.EMPLOYEE_ROLE2)) {
-            requestService.createChangeRoleRequest(RequestType.TIER2_TO_TIER1);
-        }
-        response.sendRedirect("transactions");
-    }
 }

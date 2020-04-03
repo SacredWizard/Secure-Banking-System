@@ -10,12 +10,15 @@ import edu.asu.sbs.models.*;
 import edu.asu.sbs.repositories.*;
 import edu.asu.sbs.services.dto.ChequeDTO;
 import edu.asu.sbs.services.dto.TransactionDTO;
+import edu.asu.sbs.services.dto.TransferOrRequestDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+
+import static edu.asu.sbs.config.Constants.CRITICAL_TRANSACTION_LIMIT;
 
 @Service
 public class TransactionService {
@@ -27,8 +30,9 @@ public class TransactionService {
     private final RequestRepository requestRepository;
     private final UserService userService;
     private final TransactionHyperledgerService transactionHyperledgerService;
+    private final TransferRequestRepository transferRequestRepository;
 
-    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository, TransactionAccountLogRepository transactionAccountLogRepository, ChequeRepository chequeRepository, RequestRepository requestRepository, UserService userService, TransactionHyperledgerService transactionHyperledgerService) {
+    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository, TransactionAccountLogRepository transactionAccountLogRepository, ChequeRepository chequeRepository, RequestRepository requestRepository, UserService userService, TransactionHyperledgerService transactionHyperledgerService, TransferRequestRepository transferRequestRepository) {
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
         this.transactionAccountLogRepository = transactionAccountLogRepository;
@@ -36,6 +40,7 @@ public class TransactionService {
         this.requestRepository = requestRepository;
         this.userService = userService;
         this.transactionHyperledgerService = transactionHyperledgerService;
+        this.transferRequestRepository = transferRequestRepository;
     }
 
     public List<TransactionDTO> getTransactions() {
@@ -73,7 +78,7 @@ public class TransactionService {
                     case TransactionType.DEBIT:
                         if (fromAccount.getAccountBalance() >= transactionDTO.getTransactionAmount()) {
                             fromAccount.setAccountBalance(fromAccount.getAccountBalance() - transactionDTO.getTransactionAmount());
-                            if (transactionDTO.getTransactionAmount() <= 1000 && !transactionStatus.equals(TransactionStatus.PENDING)) {
+                            if (transactionDTO.getTransactionAmount() <= CRITICAL_TRANSACTION_LIMIT && !transactionStatus.equals(TransactionStatus.PENDING)) {
                                 toAccount.setAccountBalance(toAccount.getAccountBalance() + transactionDTO.getTransactionAmount());
                             }
                         } else {
@@ -83,7 +88,7 @@ public class TransactionService {
                     case TransactionType.CREDIT:
                         if (toAccount.getAccountBalance() >= transactionDTO.getTransactionAmount()) {
                             toAccount.setAccountBalance(toAccount.getAccountBalance() - transactionDTO.getTransactionAmount());
-                            if (transactionDTO.getTransactionAmount() <= 1000 && !transactionStatus.equals(TransactionStatus.PENDING)) {
+                            if (transactionDTO.getTransactionAmount() <= CRITICAL_TRANSACTION_LIMIT && !transactionStatus.equals(TransactionStatus.PENDING)) {
                                 fromAccount.setAccountBalance(fromAccount.getAccountBalance() + transactionDTO.getTransactionAmount());
                             }
                         } else {
@@ -103,7 +108,7 @@ public class TransactionService {
                 transaction.setModifiedTime(Instant.now());
                 transaction.setDescription(transactionDTO.getDescription());
                 transaction.setFromAccount(fromAccount);
-                if (transactionDTO.getTransactionAmount() > 1000) {
+                if (transactionDTO.getTransactionAmount() > CRITICAL_TRANSACTION_LIMIT) {
                     transaction.setStatus(TransactionStatus.PENDING);
                 } else {
                     transaction.setStatus(transactionStatus);
@@ -116,7 +121,7 @@ public class TransactionService {
                 accountRepository.save(toAccount);
                 accountRepository.save(fromAccount);
                 transaction = transactionRepository.save(transaction);
-                if (transactionDTO.getTransactionAmount() > 1000) {
+                if (transactionDTO.getTransactionAmount() > CRITICAL_TRANSACTION_LIMIT) {
                     Request request = new Request();
                     request.setCreatedDate(Instant.now());
                     request.setLinkedTransaction(transaction);

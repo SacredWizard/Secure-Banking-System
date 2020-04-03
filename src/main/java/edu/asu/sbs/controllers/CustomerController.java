@@ -199,6 +199,7 @@ public class CustomerController {
                 Template template = handlebarsTemplateLoader.getTemplate("otpTransaction");
                 return template.apply(handlebarsTemplateLoader.getContext(result));
             case "REQUEST":
+                requestService.raiseTransferRequest(transferOrRequestDTO);
                 break;
             default:
                 throw new GenericRuntimeException("Invalid Type of request, dont cheat ¯\\_(ツ)_/¯");
@@ -224,16 +225,37 @@ public class CustomerController {
             default:
                 throw new GenericRuntimeException("Invalid Type of request, ¯\\_(ツ)_/¯");
         }
-        response.sendRedirect("home");
+        response.sendRedirect("transferOrRequest");
+    }
+    @PostMapping("/approveRequest")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void approveTransferRequest(Long requestId, HttpServletResponse response) throws IOException, NullPointerException {
+        TransactionDTO transactionDTO = requestService.transferByRequest(requestId);
+        //transactionDTO.setTransactionType(TransactionType.DEBIT);
+        //transactionService.createTransaction(transactionDTO, TransactionStatus.APPROVED);
+        response.sendRedirect("reviewRequests");
     }
 
     @PreAuthorize("hasAnyAuthority('" + UserType.USER_ROLE + "," + UserType.MERCHANT_ROLE + "')")
+    @PostMapping("/denyRequest")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void denyTransferRequest(Long requestId, HttpServletResponse response) throws IOException, NullPointerException {
+        requestService.denyTransferRequest(requestId);
+        response.sendRedirect("reviewRequests");
+    }
     @GetMapping("/reviewRequests")
     @ResponseBody
     public String getReviewRequestTemplate() throws IOException {
+        User currentUser = userService.getCurrentUser();
+        List<TransferOrRequestDTO> pendingRequests = requestService.getTransferRequestsToUser(currentUser);
+        HashMap<String, List<TransferOrRequestDTO>> resultMap = new HashMap<>();
+        resultMap.put("result", pendingRequests);
+        JsonNode result = mapper.valueToTree(resultMap);
         Template template = handlebarsTemplateLoader.getTemplate("extUserTransferRequests");
-        return template.apply("");
+        return template.apply(handlebarsTemplateLoader.getContext(result));
     }
+
+
 
     @PreAuthorize("hasAnyAuthority('" + UserType.USER_ROLE + "')")
     @GetMapping("/newAccountRequests")

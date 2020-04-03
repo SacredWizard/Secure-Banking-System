@@ -14,6 +14,7 @@ import edu.asu.sbs.services.dto.DetailedNewAccountRequestDTO;
 import edu.asu.sbs.services.dto.ProfileRequestDTO;
 import edu.asu.sbs.services.dto.Tier2RequestsDTO;
 import lombok.extern.slf4j.Slf4j;
+import edu.asu.sbs.services.dto.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,8 +38,10 @@ public class RequestService {
     private final ProfileRequestRepository profileRequestRepository;
     private final AccountRepository accountRepository;
     private final TransactionHyperledgerService transactionHyperledgerService;
+    private final TransferRequestRepository transferRequestRepository;
+    private final TransactionService transactionService;
 
-    public RequestService(RequestRepository requestRepository, TransactionRepository transactionRepository, TransactionAccountLogRepository transactionAccountLogRepository, AccountService accountService, UserRepository userRepository, UserService userService, ProfileRequestRepository profileRequestRepository, AccountRepository accountRepository, TransactionHyperledgerService transactionHyperledgerService) {
+    public RequestService(RequestRepository requestRepository, TransactionRepository transactionRepository, TransactionAccountLogRepository transactionAccountLogRepository, AccountService accountService, UserRepository userRepository, UserService userService, ProfileRequestRepository profileRequestRepository, AccountRepository accountRepository, TransactionHyperledgerService transactionHyperledgerService, TransferRequestRepository, transferRequestRepository) {
         this.requestRepository = requestRepository;
         this.transactionRepository = transactionRepository;
         this.transactionAccountLogRepository = transactionAccountLogRepository;
@@ -46,6 +50,8 @@ public class RequestService {
         this.userService = userService;
         this.profileRequestRepository = profileRequestRepository;
         this.accountRepository = accountRepository;
+        this.transferRequestRepository = transferRequestRepository;
+        this.transactionService = transactionService;
         this.transactionHyperledgerService = transactionHyperledgerService;
     }
 
@@ -294,6 +300,114 @@ public class RequestService {
         return detailedNewAccountRequestDTOList;
     }
 
+    TransferOrRequestDTO getTransferOrRequestDto(TransferRequest transferRequest) {
+        TransferOrRequestDTO transferRequestDTO = new TransferOrRequestDTO();
+        transferRequestDTO.setFromAccount(transferRequest.getRaisedFrom().getId());
+        transferRequestDTO.setToAccount(transferRequest.getAcceptedBy().getId());
+        transferRequestDTO.setAmount(transferRequest.getAmount());
+        transferRequestDTO.setDescription(transferRequest.getTransferRequestStatus());
+        transferRequestDTO.setRequestId(transferRequest.getRequestId());
+        return transferRequestDTO;
+    }
+    public List<TransferOrRequestDTO> getTransferRequestsToUser(User currentUser) {
+        List<Account> accounts = accountRepository.findByUserAndIsActive(currentUser, true);
+        List<TransferOrRequestDTO> transferRequestList = new ArrayList<>();
+        for(Account account:accounts) {
+            transferRequestList.addAll(transferRequestRepository.findByAcceptedByAndTransferRequestStatus(account, "PENDING").stream()
+                    .map(transferRequest
+                            -> getTransferOrRequestDto(transferRequest))
+                    .collect(Collectors.toList()));
+        }
+        return transferRequestList;
+    }
+
+    public List<TransferOrRequestDTO> getTransferRequestsFromUser(User currentUser) {
+        List<Account> accounts = accountRepository.findByUserAndIsActive(currentUser, true);
+        List<TransferOrRequestDTO> transferRequestList = new ArrayList<>();
+        for(Account account:accounts) {
+            transferRequestList.addAll(transferRequestRepository.findByRaisedFromAndTransferRequestStatus(account,"PENDING").stream()
+                    .map(transferRequest
+                            -> getTransferOrRequestDto(transferRequest))
+                    .collect(Collectors.toList()));
+        }
+        return transferRequestList;
+    }
+
+    boolean validateForRequest(TransactionDTO transactionDTO) {
+        boolean valid = true;
+        Account fromAccount = accountRepository.findByIdAndIsActive(transactionDTO.getFromAccount(), true).orElse(null);
+        Account toAccount = accountRepository.findByIdAndIsActive(transactionDTO.getToAccount(), true).orElse(null);
+        valid &= (fromAccount!=null);
+        valid &= (toAccount!=null);
+        return valid;
+    }
+
+    @Transactional
+    public void raiseTransferRequest(TransferOrRequestDTO transferOrRequestDTO) {
+        TransactionDTO transactionDTO = null;
+        if (transferOrRequestDTO.getMode().equals("account"))
+            transactionDTO = getTransactionDto(transferOrRequestDTO);
+        else {
+            transactionDTO = userService.transferByEmailOrPhone(transferOrRequestDTO);
+        }
+        if(!validateForRequest(transactionDTO))
+            throw  new GenericRuntimeException("Failed in request");
+
+        Account fromAccount = accountRepository.findByIdAndIsActive(transactionDTO.getFromAccount(), true).orElse(null);
+        Account toAccount = accountRepository.findByIdAndIsActive(transactionDTO.getToAccount(), true).orElse(null);
+        TransferRequest transferRequest = new TransferRequest();
+        transferRequest.setAmount(transactionDTO.getTransactionAmount());
+        transferRequest.setTransferRequestStatus(StatusType.PENDING);
+        transferRequest.setAcceptedBy(toAccount);
+        transferRequest.setRaisedFrom(fromAccount);
+        transferRequest.setCreatedTime(Instant.now());
+        transferRequestRepository.save(transferRequest);
+    }
+
+    private TransactionDTO getTransactionDto(TransferOrRequestDTO transferOrRequestDTO) {
+        TransactionDTO transactionDTO = new TransactionDTO();
+        transactionDTO.setTransactionType(TransactionType.DEBIT);
+        transactionDTO.setTransactionAmount(transferOrRequestDTO.getAmount());
+        transactionDTO.setToAccount(transferOrRequestDTO.getFromAccount());
+        transactionDTO.setFromAccount(transferOrRequestDTO.getToAccount());
+        transactionDTO.setCreatedDate(Instant.now());
+        return transactionDTO;
+    }
+
+    @Transactional
+    public TransactionDTO transferByRequest(Long requestId) {
+        TransferRequest transferRequest = transferRequestRepository.findByRequestId(requestId).orElse(null);
+        if(transferRequest==null)
+            throw new GenericRuntimeException("Invalid Request");
+        TransactionDTO transactionDTO = getTransactionDto(transferRequest);
+        transactionDTO.setTransactionType(TransactionType.DEBIT);
+        Transaction transaction = transactionService.createTransaction(transactionDTO, StatusType.APPROVED);
+        transferRequest.setUpdatedTime(Instant.now());
+        transferRequest.setTransferRequestStatus(StatusType.APPROVED);
+        transferRequestRepository.save(transferRequest);
+        return transactionDTO;
+    }
+
+    private TransactionDTO getTransactionDto(TransferRequest transferRequest) {
+
+        TransactionDTO transactionDTO = new TransactionDTO();
+        transactionDTO.setFromAccount(transferRequest.getRaisedFrom().getId());
+        transactionDTO.setToAccount(transferRequest.getAcceptedBy().getId());
+        transactionDTO.setTransactionAmount(transferRequest.getAmount());
+        transactionDTO.setDescription(transferRequest.getTransferRequestStatus());
+        transactionDTO.setRequestId(transferRequest.getRequestId());
+        return transactionDTO;
+    }
+
+    @Transactional
+    public void denyTransferRequest(Long requestId) {
+        TransferRequest transferRequest = transferRequestRepository.findByRequestId(requestId).orElse(null);
+        if(transferRequest==null)
+            throw new GenericRuntimeException("Invalid Request");
+        transferRequest.setUpdatedTime(Instant.now());
+        transferRequest.setTransferRequestStatus(StatusType.DECLINED);
+        transferRequestRepository.save(transferRequest);
+    }
     @Transactional
     public void createAccountTypeChangeRequest(Account account, AccountType toAccount, User requester) {
         Request request = new Request();
@@ -307,6 +421,7 @@ public class RequestService {
         requestRepository.save(request);
         log.info(Instant.now() + ": Request created for Account Type change. RequestID: " + request.getRequestId());
     }
+
 
     public List<AccountTypeChangeDTO> getAllAccountTypeChangeRequests() {
         List<AccountTypeChangeDTO> RequestDTOList = Lists.newArrayList();

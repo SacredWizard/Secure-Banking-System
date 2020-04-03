@@ -21,6 +21,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+
+import static edu.asu.sbs.config.Constants.*;
 
 @Slf4j
 @Service
@@ -167,4 +171,11 @@ public class AccountService {
         return pendingAccountDTOList;
     }
 
+    public List<String> getAccountNumbersForUser(User currentUser) {
+        List<Long> accountNumbers = new ArrayList<>();
+        List<Account> userAccounts = accountRepository.findByUserAndIsActive(currentUser, true);
+        return userAccounts.stream()
+                .map(account->account.getAccountNumber())
+                .collect(Collectors.toList());
+    }
 }
