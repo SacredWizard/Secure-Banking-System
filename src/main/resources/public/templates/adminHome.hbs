@@ -2,27 +2,51 @@
 
 {{/partial}}
 {{#partial "body"}}
-    <div >
-        <table id="results" class="display cell-border hover" width="100%">
+    <div>
+        <table id="results" width="100%">
             <thead>
             <tr>
-                <th>Employee ID</th>
-                <th>Request Description</th>
-                <th>Time</th>
-                <th>Approve/Deny</th>
+{{!--                 <th align="center">Modified Date</th> --}}
+                <th align="center">Created Date</th>
+                <th align="center">Request ID</th>
+                <th align="center">Status</th>
+                <th align="center">Description</th>
+                <th align="center">Role Change</th>
+                <th align="center">Email</th>
+                <th align="center">Phone Number</th>
+                <th align="center">Approve/Deny</th>
             </tr>
             </thead>
             <tbody>
+
             {{#each result }}
-            <tr>
-                <td align="center">{{ emplyoeeId }}</td>
-                <td align="center">{{ description }}</td>
-                <td align="center">{{ time }}</td>
-                <td align="center">
-                    <button class="inline"> <a href=""> Approve </a> </button>
-                    <button class="inline"> <a href=""> Deny </a> </button>
-                </td>
-            </tr>
+                <tr>
+{{!--                     <td align="center">{{ modifiedDate }}</td> --}}
+                    <td align="center">{{ createdDate }}</td>
+                    <td align="center">{{ requestId }}</td>
+                    <td align="center">{{ status }}</td>
+                    <td align="center">{{ description }}</td>
+                    <td align="center">{{ roleChange }}</td>
+                    <td align="center">{{ email }}</td>
+                    <td align="center">{{ phoneNumber }}</td>
+
+                    <td align="center">
+                        {{#eq status "PENDING"}}
+                            <form method="post" action="/api/v1/admin/requests/approve" class="inline">
+                                <input type="text" name="id" value="{{requestId}}" style="display: none">
+                                <input id="update" class="btn btn-primary" type="submit" name="approve"
+                                       value="Approve"/>
+                            </form>
+                            <form method="post" action="/api/v1/admin/requests/decline" class="inline">
+                                <input type="text" name="id" value="{{requestId}}" style="display: none">
+                                <input id="delete" class="btn btn-danger" type="submit" name="deny"
+                                       value="Deny"/>
+                            </form>
+                        {{else}}
+                            -
+                        {{/eq}}
+                    </td>
+                </tr>
             {{/each}}
             </tbody>
         </table>
@@ -30,6 +54,5 @@
 {{/partial}}
 
 {{#partial "scripts"}}
-    <script type="text/javascript" src="/js/dataTableHandler.js"></script>
 {{/partial}}
 {{> adminBase}}

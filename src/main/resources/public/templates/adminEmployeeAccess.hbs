@@ -18,7 +18,7 @@
                 <th align="center">Email</th>
                 <th align="center">Phone Number</th>
                 <th align="center">SSN</th>
-                <th align="center">Update/Delete</th>
+                <th align="center">Delete</th>
             </tr>
             </thead>
             <tbody>
@@ -34,7 +34,6 @@
                         <td align="center">{{ phoneNumber }}</td>
                         <td align="center">{{ ssn }}</td>
                         <td align="center">
-                            <input id="update" class="btn btn-primary" type="button" name="update" onclick="location.href='/api/v1/admin/viewEmployee/{{ id }}'" value="Update"/>
                             <input id="delete" class="btn btn-danger"  type="button" name="delete" onclick="location.href='/api/v1/admin/delete/{{ id }}'" value="Delete"/>
                         </td>
                     </tr>
@@ -46,6 +45,5 @@
 {{/partial}}
 
 {{#partial "scripts"}}
-    <script type="text/javascript" src="/js/dataTableHandler.js"></script>
 {{/partial}}
 {{> adminBase}}

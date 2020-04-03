@@ -68,12 +68,12 @@ public class UserController {
 
     @PostMapping(path = "/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public String registerUser(ManageUserVM manageUserVM) throws IOException {
+    public String registerUser(ManageUserVM manageUserVM, String userType) throws IOException {
         log.info(manageUserVM.toString());
         if (checkPasswordLength(manageUserVM.getPassword())) {
             throw new InvalidPasswordException();
         }
-        User user = userService.registerUser(manageUserVM, manageUserVM.getPassword());
+        User user = userService.registerUser(manageUserVM, manageUserVM.getPassword(), userType);
         mailService.sendActivationEmail(user);
         Template template = handlebarsTemplateLoader.getTemplate("activate");
         return template.apply("");
@@ -84,7 +84,7 @@ public class UserController {
     public void activate(@RequestParam(value = "key") String key, HttpServletResponse response) throws IOException {
         Optional<User> user = userService.activateRegistration(key);
         if (!user.isPresent()) {
-            throw new AccountResourceException("No user was found for this activation key");
+            throw new AccountResourceException("LOL! No user was found for this activation key ¯\\_(ツ)_/¯");
         }
         response.sendRedirect("/api/v1/user/login");
     }
@@ -94,6 +94,7 @@ public class UserController {
         Template template = handlebarsTemplateLoader.getTemplate("forgotPasswordInit");
         return template.apply("");
     }
+
 
     @PostMapping(path = "/reset-password/init")
     public void requestPasswordReset(String email, HttpServletResponse response) throws IOException {
@@ -123,7 +124,7 @@ public class UserController {
                 userService.completePasswordReset(keyAndPassword.getNewPassword(), keyAndPassword.getKey());
 
         if (!user.isPresent()) {
-            throw new AccountResourceException("No user was found for this reset key");
+            throw new AccountResourceException("No sniffing around, No user was found for this reset key ¯\\_(ツ)_/¯");
         }
         response.sendRedirect("/api/v1/user/login");
     }

@@ -9,7 +9,6 @@
     <script type="text/javascript" src="/webjars/jquery/3.4.1/jquery.min.js"></script>
     <script type="text/javascript" src="/webjars/datatables/1.10.20/js/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="/webjars/bootstrap/4.4.1-1/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="/js/profileHandler.js"></script>
     {{#block "head"}}
     {{!-- Custom <head> content per page could be added. --}}
     {{/block}}
@@ -22,41 +21,54 @@
 </header>
 <div class="ml-xl-5 mr-xl-5">
     <div class="container">
-        <form class="form-horizontal" role="form">
+        {{#if (eq userType "USER_ROLE")}}
+            <form class="form-horizontal" role="form" method="post" action="/api/v1/customer/raiseProfileUpdateRequest">
+        {{else if (eq userType "EMPLOYEE_ROLE1")}}
+            <form class="form-horizontal" role="form" method="post" action="/api/v1/tier1/raiseProfileUpdateRequest">
+        {{else if (eq userType "EMPLOYEE_ROLE2")}}
+            <form class="form-horizontal" role="form" method="post" action="/api/v1/tier2/raiseProfileUpdateRequest">
+        {{else if (eq userType "ADMIN_ROLE")}}
+            <form class="form-horizontal" role="form" method="post" action="/api/v1/admin/details/edit">
+        {{else if (eq userType "MERCHANT_ROLE")}}
+        <form class="form-horizontal" role="form" method="post" action="/api/v1/merchant/">
+        {{else}}
+            <form class="form-horizontal" role="form">
+        {{/if}}
+
             <div class="form-group">
                 <label class="col-lg-3 control-label">User Name:</label>
                 <div class="col-lg-8">
-                    <input class="form-control" type="text" id="userName" name="userName" value="{{ userName }}" readonly>
+                    <input class="form-control" type="text" id="userName" name="userName" value="{{ userName }}" disabled>
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-lg-3 control-label">First Name:</label>
                 <div class="col-lg-8">
-                    <input class="form-control" type="text" id="firstName" name="firstName" value=" {{ firstName }}" readonly>
+                    <input class="form-control" type="text" id="firstName" name="firstName" value=" {{ firstName }}" disabled>
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-lg-3 control-label">Last Name:</label>
                 <div class="col-lg-8">
-                    <input class="form-control" type="text" id="lastName" name="lastName" value="{{ lastName }}" readonly>
+                    <input class="form-control" type="text" id="lastName" name="lastName" value="{{ lastName }}" disabled>
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-lg-3 control-label">Email:</label>
                 <div class="col-lg-8">
-                    <input class="form-control" type="text" id="email" name="email" value="{{ email }}" readonly>
+                    <input class="form-control" type="text" id="email" name="email" value="{{ email }}" disabled>
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-lg-3 control-label">Phone Number:</label>
                 <div class="col-lg-8">
-                    <input class="form-control" type="text" id="phoneNumber" name="phoneNumber" value="{{ phoneNumber }}" readonly>
+                    <input class="form-control" type="text" id="phoneNumber" name="phoneNumber" value="{{ phoneNumber }}" disabled>
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-lg-3 control-label">SSN:</label>
                 <div class="col-lg-8">
-                    <input class="form-control" type="text" id="ssn" name="ssn" value="{{ ssn }}" readonly>
+                    <input class="form-control" type="text" id="ssn" name="ssn" value="{{ ssn }}" disabled>
                 </div>
             </div>
             <div class="form-group">
@@ -64,8 +76,6 @@
                     {{#block "profileUser"}}
 
                     {{/block}}
-                    <span></span>
-                    <input type="submit" id="save" class="btn btn-primary" value="Save" disabled>
                 </div>
             </div>
         </form>
@@ -74,7 +84,7 @@
 
 
 {{#block "scripts"}}
-{{!-- Hero content goes here. --}}
+        <script type="text/javascript" src="/js/profileHandler.js"></script>
 {{/block}}
 </body>
 </html>

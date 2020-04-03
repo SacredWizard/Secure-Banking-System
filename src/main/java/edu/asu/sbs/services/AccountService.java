@@ -1,38 +1,37 @@
 package edu.asu.sbs.services;
 
 import com.google.common.collect.Lists;
-import edu.asu.sbs.config.UserType;
+import edu.asu.sbs.config.RequestType;
+import edu.asu.sbs.config.StatusType;
 import edu.asu.sbs.errors.GenericRuntimeException;
-import edu.asu.sbs.globals.AccountType;
 import edu.asu.sbs.globals.CreditDebitType;
 import edu.asu.sbs.models.Account;
+import edu.asu.sbs.models.Request;
 import edu.asu.sbs.models.User;
 import edu.asu.sbs.repositories.AccountRepository;
-import edu.asu.sbs.repositories.TransactionAccountLogRepository;
-import edu.asu.sbs.services.dto.CreateAccountDTO;
+import edu.asu.sbs.repositories.RequestRepository;
 import edu.asu.sbs.services.dto.CreditDebitDTO;
+import edu.asu.sbs.services.dto.NewAccountRequestDTO;
 import edu.asu.sbs.services.dto.ViewAccountDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.security.GeneralSecurityException;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static edu.asu.sbs.config.Constants.*;
 
 @Slf4j
 @Service
 public class AccountService {
 
     private final AccountRepository accountRepository;
-    private final TransactionAccountLogRepository transactionAccountLogRepository;
+    private final RequestRepository accountRequestRepository;
 
-    public AccountService(AccountRepository accountRepository, TransactionAccountLogRepository transactionAccountLogRepository) {
+    public AccountService(AccountRepository accountRepository, RequestRepository accountRequestRepository) {
         this.accountRepository = accountRepository;
-        this.transactionAccountLogRepository = transactionAccountLogRepository;
+        this.accountRequestRepository = accountRequestRepository;
     }
 
     public List<ViewAccountDTO> getAccounts() {
@@ -52,22 +51,38 @@ public class AccountService {
         return accountRepository.findAccountByUserAndDefaultAccount(user, true).get();
     }
 
-    public void createAccount(User customer, CreateAccountDTO createAccountDTO) {
+    public NewAccountRequestDTO createAccount(User customer, NewAccountRequestDTO newAccountRequestDTO) {
         Account newAccount = new Account();
-        newAccount.setAccountBalance(createAccountDTO.getInitialDeposit());
-//        newAccount.setAccountNumber(createAccountDTO.getAccountNumber());
-        newAccount.setAccountType(createAccountDTO.getAccountType());
+        newAccount.setAccountBalance(newAccountRequestDTO.getInitialDeposit());
+        newAccount.setAccountType(newAccountRequestDTO.getAccountType());
         newAccount.setUser(customer);
+        if(newAccountRequestDTO.getAccountNumber() != null) {
+            //If we allow user to set her desired account number, then we need to handle if DB save fails
+            newAccount.setAccountNumber(newAccountRequestDTO.getAccountNumber());
+        }
+        log.info(Instant.now() + ": Adding a new account for the user: " + customer.getUserName());
         accountRepository.save(newAccount);
+        Request accountRequest = new Request();
+        accountRequest.setRequestType(RequestType.CREATE_NEW_ACCOUNT);
+        accountRequest.setCreatedDate(Instant.now());
+        accountRequest.setDescription("New account request by user "+customer.getUserName());
+        accountRequest.setLinkedAccount(newAccount);
+        accountRequest.setRequestBy(customer);
+        accountRequest.setStatus(StatusType.PENDING);
+        log.info(Instant.now() + ": Creating a new account request for the user: " + customer.getUserName());
+        accountRequestRepository.save(accountRequest);
+        newAccountRequestDTO.setAccountNumber(newAccount.getAccountNumber());
+        return newAccountRequestDTO;
     }
 
     public void credit(Account account, Double amount) throws Exception {
         try {
             Double currentBalance = account.getAccountBalance();
             account.setAccountBalance(currentBalance + amount);
+            log.info(Instant.now() + ": Credited:" + amount + " amount to the account: " + account.getAccountNumber());
             accountRepository.save(account);
         } catch (Exception e) {
-            throw new Exception("Failed to credit from account " + account.getAccountNumber(), e);
+            throw new Exception("¯\\_(ツ)_/¯ Failed to credit from account " + account.getAccountNumber(), e);
         }
     }
 
@@ -78,46 +93,44 @@ public class AccountService {
     @Transactional
     public void makeSelfTransaction(User currentUser, CreditDebitDTO creditDebitRequest) throws Exception {
         List<Account> currentUserAccounts = accountRepository.findByUserAndLock(currentUser);
+        boolean updated = false;
         for (Account currentUserAccount : currentUserAccounts) {
             if (currentUserAccount.getId().equals(creditDebitRequest.getId())) {
-                System.out.println("Accounts :\n" + currentUserAccount.getId());
+                log.info("Accounts :\n" + currentUserAccount.getId());
                 if (creditDebitRequest.getCreditDebitType() == CreditDebitType.CREDIT) {
                     credit(currentUserAccount, creditDebitRequest.getAmount());
                 } else if (creditDebitRequest.getCreditDebitType() == CreditDebitType.DEBIT) {
                     debit(currentUserAccount, creditDebitRequest.getAmount());
                 }
-                return;
+                updated = true;
+                break;
             }
         }
-        throw new Exception("Invalid Account");
+        if (!updated) {
+            throw new GenericRuntimeException("Invalid Account ¯\\_(ツ)_/¯");
+        }
     }
 
     private void debit(Account account, Double amount) throws Exception {
         try {
             Double currentBalance = account.getAccountBalance();
             if (currentBalance < amount)
-                throw new Exception("Insufficient Funds");
+                throw new Exception("Insufficient Funds, feeling poor huh ¯\\_(ツ)_/¯");
             if (account.isActive()) {
                 account.setAccountBalance(currentBalance - amount);
+                log.info(Instant.now() + ": Debited:" + amount + " amount from the account: " + account.getAccountNumber());
                 accountRepository.save(account);
             } else {
-                throw new Exception("Inactive account");
+                throw new Exception("Inactive account, SAD no account ¯\\_(ツ)_/¯");
             }
         } catch (Exception e) {
+            log.error(Instant.now() + "Failed to debit from account " + account.getAccountNumber());
             throw new Exception("Failed to debit from account " + account.getAccountNumber(), e);
         }
     }
 
     public Optional<Account> getAccountById(Long id) {
         return (accountRepository.getAccountById(id));
-    }
-
-    public void updateAccountType(Long accountId, AccountType accountType) {
-        Optional<Account> account = getAccountById(accountId);
-        account.ifPresent(account1 -> {
-            account1.setAccountType(accountType);
-            accountRepository.save(account1);
-        });
     }
 
     public void closeUserAccount(Long id) {
@@ -127,10 +140,12 @@ public class AccountService {
             if (!account.get().isDefaultAccount()) {
                 account.ifPresent(account1 -> {
                     account1.setActive(false);
+                    log.info(Instant.now() + ": Closed the account: " + account1.getAccountNumber());
                     accountRepository.save(account1);
                 });
             } else {
-                throw new GenericRuntimeException("Cannot close the default account");
+                log.warn(Instant.now() + ": Cannot close the default account");
+                throw new GenericRuntimeException("Cannot close the default account ¯\\_(ツ)_/¯");
             }
         }
     }
@@ -139,56 +154,17 @@ public class AccountService {
         accountRepository.delete(account);
     }
 
-    // generate account number
-    static String getNumericString(int n) {
-        String AlphaNumericString = "0123456789";
-
-        StringBuilder sb = new StringBuilder(n);
-
-        for (int i = 0; i < n; i++) {
-            int index
-                    = (int) (AlphaNumericString.length()
-                    * Math.random());
-
-            sb.append(AlphaNumericString
-                    .charAt(index));
+    public List<NewAccountRequestDTO> getPendingAccountsForUser(User currentUser) {
+        List<Account> pendingAccounts = accountRepository.findByUserAndIsActive(currentUser, false);
+        List<NewAccountRequestDTO> pendingAccountDTOList= new ArrayList<NewAccountRequestDTO>();
+        for(Account pendingAccount:pendingAccounts) {
+            NewAccountRequestDTO pendingAccountDTO = new NewAccountRequestDTO();
+            pendingAccountDTO.setAccountNumber(pendingAccount.getAccountNumber());
+            pendingAccountDTO.setAccountType(pendingAccount.getAccountType());
+            pendingAccountDTO.setInitialDeposit(pendingAccount.getAccountBalance());
+            pendingAccountDTOList.add(pendingAccountDTO);
         }
-        return sb.toString();
-    }
-
-    public void createDefaultAccount(User newCustomer) {
-
-        // Give a default "CHECKING" account to the user with $500 in his account.
-        String accountNum = getNumericString(MAX_ACCOUNT_NUM_LEN);
-
-        // check if account number is existing.
-        AtomicBoolean accountCreation = new AtomicBoolean(true);
-        System.out.println("---------Checking if Account number is present-------");
-        accountRepository.findByAccountNumber(accountNum).ifPresent(account -> {
-            System.out.println("---------Account number is present-------");
-            accountCreation.set(false);
-            try {
-                throw new GeneralSecurityException("Account number already exists");
-            } catch (GeneralSecurityException e) {
-                e.printStackTrace();
-            }
-        });
-        /* if account number is unique, just create account and return the user. */
-        if (accountCreation.get() == true) {
-        Account newAccount = new Account();
-        newAccount.setAccountNumber(accountNum);
-        newAccount.setAccountBalance(INITIAL_DEPOSIT_AMOUNT);
-        if (newCustomer.getUserType() == UserType.MERCHANT_ROLE) {
-            newAccount.setAccountType(AccountType.CURRENT);
-        } else {
-            newAccount.setAccountType(DEFAULT_ACCOUNT_TYPE);
-        }
-        newAccount.setActive(true);
-        newAccount.setUser(newCustomer);
-        newAccount.setDefaultAccount(true);
-        accountRepository.save(newAccount);
-        log.info(newAccount.toString());
-        }
+        return pendingAccountDTOList;
     }
 
 }

@@ -83,3 +83,10 @@ server:
 #      hibernate:
 #        SQL: DEBUG
 #        type: TRACE
+logging:
+  file:
+    name: '/Users/rakeshr/rr/ASU/ss/Secure-Banking-System/logs/application.log'
+    max-size: 10MB
+  pattern:
+    file: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%'
+

@@ -2,6 +2,7 @@
     <ul>
         <li><a class="active" href="/api/v1/tier1/transactions">Secure Banking System</a></li>
         <li><a href="/api/v1/tier1/transactions">Transaction Requests</a></li>
+        <li><a href="/api/v1/tier1/viewAccountRequests">User Requests</a></li>
         <li><a href="/api/v1/tier1/accounts">Access User Accounts</a></li>
         <li><a href="/api/v1/tier1/cheques">Cheques</a></li>
         <li><a href="/api/v1/tier1/profile">Profile</a></li>
@@ -10,9 +11,11 @@
 {{/partial}}
 
 {{#partial "profileUser"}}
-    <input type="button" id="profileBtn" class="btn btn-primary" onclick="editProfile();editAll()" value="Edit Profile">
+    <input type="button" id="profileBtn" class="btn btn-primary" onclick="editProfile()" value="Edit Profile">
     <span></span>
-    <input type="button" id="ssnBtn" class="btn btn-primary" onclick="editSSN()" value="Edit SSN">
+    <input type="submit" id="save" class="btn btn-primary" value="Request Modification" disabled>
+    <span></span>
+    <input type="button" class="btn btn-success"  onclick="location.href='/api/v1/tier1/raiseChangeRoleRequest'" value="Request Role Change">
 {{/partial}}
 
 {{> profile}}

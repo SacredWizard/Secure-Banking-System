@@ -13,7 +13,7 @@ import edu.asu.sbs.models.Request;
 import edu.asu.sbs.models.User;
 import edu.asu.sbs.services.*;
 import edu.asu.sbs.services.dto.ChequeDTO;
-import edu.asu.sbs.services.dto.RequestDTO;
+import edu.asu.sbs.services.dto.ProfileRequestDTO;
 import edu.asu.sbs.services.dto.TransactionDTO;
 import edu.asu.sbs.services.dto.ViewAccountDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -126,7 +126,6 @@ public class Tier1Controller {
         return template.apply(handlebarsTemplateLoader.getContext(result));
     }
 
-
     @GetMapping("/createTransaction")
     @ResponseBody
     public String getCreateTransactionTemplate() throws IOException {
@@ -163,12 +162,21 @@ public class Tier1Controller {
         transactionService.denyCheque(chequeId);
     }
 
-    @PostMapping("/raiseRequest")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public void raiseRequest(@RequestBody RequestDTO requestDTO) {
-
+    @GetMapping("/viewAccountRequests")
+    public String geUserProfileUpdaterRequests() throws IOException {
+        List<ProfileRequestDTO> allRequests;
+        allRequests = requestService.getAllProfileUpdateRequests(RequestType.UPDATE_USER_PROFILE);
+        HashMap<String, List<ProfileRequestDTO>> resultMap = new HashMap<>();
+        resultMap.put("result", allRequests);
+        JavaTimeModule module = new JavaTimeModule();
+        mapper.registerModule(module);
+        JsonNode result = mapper.valueToTree(resultMap);
+        Template template = handlebarsTemplateLoader.getTemplate("tier1ViewAccountRequests");
+        return template.apply(handlebarsTemplateLoader.getContext(result));
     }
 
+
+    @PostMapping("/approveUpdateUserProfile")
     @GetMapping("/profileUpdateRequests")
     public String getEmpProfileUpdaterRequest() throws IOException {
         ArrayList<Request> allRequests = (ArrayList<Request>) requestService.getUserProfileUpdateRequests();
@@ -181,24 +189,45 @@ public class Tier1Controller {
 
     @PostMapping("/approveUpdateUserProfile/")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    private void approveUserProfile(Long requestId, RequestDTO requestDTO) {
+    public void approveUserProfile(Long requestId, HttpServletResponse response) throws IOException {
+        System.out.println(requestId);
         Optional<Request> request = requestService.getRequest(requestId);
         User user = userService.getCurrentUser();
         request.ifPresent(req -> {
             if (RequestType.UPDATE_USER_PROFILE.equals(req.getRequestType()) && req.getStatus().equals(StatusType.PENDING)) {
-                requestService.updateUserProfile(req, user, RequestType.UPDATE_USER_PROFILE, StatusType.APPROVED, requestDTO);
+                requestService.updateUserProfile(req, user, RequestType.UPDATE_USER_PROFILE, StatusType.APPROVED);
             }
         });
+        response.sendRedirect("viewAccountRequests");
     }
 
-    @PostMapping("/declineUpdateUserProfile/")
-    private void declineUsereProfile(Long requestId, RequestDTO requestDTO) {
+    @PostMapping("/declineUpdateUserProfile")
+    public void declineUserProfile(Long requestId, HttpServletResponse response) throws IOException {
         Optional<Request> request = requestService.getRequest(requestId);
         User user = userService.getCurrentUser();
         request.ifPresent(req -> {
             if (RequestType.UPDATE_USER_PROFILE.equals(req.getRequestType()) && req.getStatus().equals(StatusType.PENDING)) {
-                requestService.updateUserProfile(req, user, RequestType.UPDATE_USER_PROFILE, StatusType.DECLINED, requestDTO);
+                requestService.updateUserProfile(req, user, RequestType.UPDATE_USER_PROFILE, StatusType.DECLINED);
             }
         });
+        response.sendRedirect("viewAccountRequests");
+    }
+
+    @PostMapping("/raiseProfileUpdateRequest")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void raiseProfileUpdateRequest(ProfileRequestDTO requestDTO, HttpServletResponse response) throws IOException {
+        if (userService.getCurrentUser().getUserType().equals(UserType.EMPLOYEE_ROLE1)) {
+            requestService.createProfileUpdateRequest(requestDTO, RequestType.UPDATE_EMP_PROFILE);
+        }
+        response.sendRedirect("transactions");
+    }
+
+    @GetMapping("/raiseChangeRoleRequest")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void createChangeRoleRequest(HttpServletResponse response) throws IOException {
+        if (UserType.EMPLOYEE_ROLE1.equals(userService.getCurrentUser().getUserType())) {
+            requestService.createChangeRoleRequest(RequestType.TIER1_TO_TIER2);
+        }
+        response.sendRedirect("transactions");
     }
 }

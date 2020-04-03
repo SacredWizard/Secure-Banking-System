@@ -6,13 +6,11 @@
         <table id="results" width="100%">
             <thead>
             <tr>
-                <th align="center">Modified Date</th>
-                <th align="center">Created Date</th>
                 <th align="center">Request ID</th>
-                <th align="center">Status</th>
-                <th align="center">Description</th>
-                <th align="center">Email</th>
-                <th align="center">Phone Number</th>
+                <th align="center">User ID</th>
+                <th align="center">Account Type</th>
+                <th align="center">Account Number</th>
+                <th align="center">Initial Deposit</th>
                 <th align="center">Approve/Deny</th>
             </tr>
             </thead>
@@ -20,29 +18,24 @@
 
             {{#each result }}
                 <tr>
-                    <td align="center">{{ modifiedDate }}</td>
-                    <td align="center">{{ createdDate }}</td>
                     <td align="center">{{ requestId }}</td>
-                    <td align="center">{{ status }}</td>
-                    <td align="center">{{ description }}</td>
-                    <td align="center">{{ email }}</td>
-                    <td align="center">{{ phoneNumber }}</td>
+                    <td align="center">{{ userName }}</td>
+                    <td align="center">{{ accountType }}</td>
+                    <td align="center">{{ accountNumber }}</td>
+                    <td align="center">{{ initialDeposit }}</td>
 
                     <td align="center">
-                        {{#eq status "PENDING"}}
-                        <form method="post" action="/api/v1/tier1/approveUpdateUserProfile" class="inline">
+                        <form method="post" action="/api/v1/tier2/approveNewAccountReq" class="inline">
                             <input type="text" name="requestId" value="{{requestId}}" style="display: none">
                             <input id="update" class="btn btn-primary" type="submit" name="approve"
                                    value="Approve"/>
                         </form>
-                        <form method="post" action="/api/v1/tier1/declineUpdateUserProfile" class="inline">
+                        <form method="post" action="/api/v1/tier2/denyNewAccountReq" class="inline">
                             <input type="text" name="requestId" value="{{requestId}}" style="display: none">
                             <input id="delete" class="btn btn-danger" type="submit" name="deny"
                                    value="Deny"/>
                         </form>
-                        {{else}}
-                            -
-                        {{/eq}}
+
                     </td>
                 </tr>
             {{/each}}
@@ -53,4 +46,4 @@
 
 {{#partial "scripts"}}
 {{/partial}}
-{{> tier1Base}}
+{{> tier2Base}}

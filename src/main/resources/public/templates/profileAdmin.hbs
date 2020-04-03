@@ -4,6 +4,7 @@
         <li><a href="/api/v1/admin/requests">View Employee Requests</a></li>
         <li><a href="/api/v1/admin/allEmployees">Access Employee Accounts</a></li>
         <li><a href="/api/v1/admin/details">Profile</a></li>
+        <li><a href="/api/v1/admin/logDownload">Download Logs</a></li>
         <li style="float:right"><a href="/logout">Log out</a></li>
     </ul>
 {{/partial}}
@@ -13,10 +14,9 @@
         <div class="col-md-8">
             <input type="button" id="profileBtn" class="btn btn-primary" onclick="editProfile();editAll()" value="Edit Profile">
             <span></span>
-            <input type="button" id="ssnBtn" class="btn btn-primary" onclick="editSSN()" value="Edit SSN">
-            <span></span>
             <input type="submit" id="save" class="btn btn-primary" value="Save" disabled>
         </div>
     </div>
 {{/partial}}
+
 {{> profile}}

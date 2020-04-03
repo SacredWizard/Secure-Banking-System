@@ -1,0 +1,48 @@
+{{#partial "body"}}
+    <form class="form-horizontal" role="form" method="POST" action="/api/v1/customer/transferFundsOtp">
+        <div class="form-group">
+            <label class="col-lg-3 control-label">From Account:</label>
+            <div class="col-lg-8">
+                <input class="form-control" type="text" id="fromAccount" name="fromAccount" value="{{ fromAccount }}"
+                       readOnly>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-lg-3 control-label">To Account:</label>
+            <div class="col-lg-8">
+                <input class="form-control" type="text" id="toAccount" name="toAccount" value="{{ toAccount }}"
+                       readOnly>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-lg-3 control-label">Amount:</label>
+            <div class="col-lg-8">
+                <input class="form-control" type="text" id="transactionAmount" name="transactionAmount"
+                       value="{{ transactionAmount }}" readOnly>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-lg-3 control-label">Description :</label>
+            <div class="col-lg-8">
+                <input class="form-control" type="text" id="description" name="description" value="{{ description }}"
+                       readOnly>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-lg-3 control-label">Please Enter the OTP sent to your email:</label>
+            <div class="col-lg-8">
+                <input class="form-control" type="text" id="keyboard" name="otp" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-8">
+                <input type="submit" class="btn btn-primary" value="Confirm OTP">
+                <span></span>
+                <input type="reset" class="btn btn-primary" value="Reset">
+            </div>
+        </div>
+        </div>
+    </form>
+{{/partial}}
+
+{{> extUserBase}}

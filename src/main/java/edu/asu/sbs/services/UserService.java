@@ -1,6 +1,7 @@
 package edu.asu.sbs.services;
 
 import com.google.common.collect.Lists;
+import edu.asu.sbs.config.Constants;
 import edu.asu.sbs.config.TransactionStatus;
 import edu.asu.sbs.config.TransactionType;
 import edu.asu.sbs.config.UserType;
@@ -16,6 +17,7 @@ import edu.asu.sbs.repositories.TransactionRepository;
 import edu.asu.sbs.repositories.UserRepository;
 import edu.asu.sbs.security.jwt.JWTFilter;
 import edu.asu.sbs.security.jwt.TokenProvider;
+import edu.asu.sbs.services.dto.NewAccountRequestDTO;
 import edu.asu.sbs.services.dto.TransactionDTO;
 import edu.asu.sbs.services.dto.TransferOrRequestDTO;
 import edu.asu.sbs.services.dto.UserDTO;
@@ -142,7 +144,6 @@ public class UserService {
 
         Account a = new Account();
         a.setAccountBalance(1000.00);
-        a.setAccountNumber("12345");
         a.setAccountType(AccountType.SAVINGS);
         a.setActive(true);
         a.setUser(userRepository.findOneWithUserTypeByUserName("user2").orElse(null));
@@ -150,19 +151,17 @@ public class UserService {
 
         a = new Account();
         a.setAccountBalance(1000.00);
-        a.setAccountNumber("12347");
         a.setAccountType(AccountType.CHECKING);
         a.setActive(true);
         a.setUser(userRepository.findOneWithUserTypeByUserName("user2").orElse(null));
         accountRepository.save(a);
 
-        a = new Account();
-        a.setAccountBalance(1000.00);
-        a.setAccountNumber("12346");
-        a.setAccountType(AccountType.CHECKING);
-        a.setActive(true);
-        a.setUser(userRepository.findOneWithUserTypeByUserName("user1").orElse(null));
-        accountRepository.save(a);
+        Account b = new Account();
+        b.setAccountBalance(1000.00);
+        b.setAccountType(AccountType.CHECKING);
+        b.setActive(true);
+        b.setUser(userRepository.findOneWithUserTypeByUserName("user1").orElse(null));
+        accountRepository.save(b);
 
         Transaction t = new Transaction();
         t.setCreatedTime(Instant.now());
@@ -171,8 +170,8 @@ public class UserService {
         t.setTransactionAmount(100.0);
         t.setModifiedTime(Instant.now());
         t.setTransactionType(TransactionType.DEBIT);
-        t.setFromAccount(accountRepository.findOneByAccountNumberEquals("12346").orElse(null));
-        t.setToAccount(accountRepository.findOneByAccountNumberEquals("12347").orElse(null));
+        t.setFromAccount(accountRepository.findById(a.getId()).orElse(null));
+        t.setToAccount(accountRepository.findById(b.getId()).orElse(null));
         TransactionAccountLog transactionAccountLog = new TransactionAccountLog();
         transactionAccountLog.setLogDescription(t.getDescription());
         TransactionAccountLog tlog = transactionAccountLogRepository.save(transactionAccountLog);
@@ -214,7 +213,7 @@ public class UserService {
         user.setDateOfBirth(userDTO.getDateOfBirth());
         user.setSsn(userDTO.getSsn());
         user.setPhoneNumber(userDTO.getPhoneNumber());
-        log.info(user.toString());
+        log.info(Instant.now() + ": Created User: " + user.toString());
         userRepository.save(user);
         return user;
     }
@@ -237,7 +236,7 @@ public class UserService {
     }
 
     private void validateUserType(String userType) {
-        if (!(userType.equals(UserType.ADMIN_ROLE) || userType.equals(UserType.EMPLOYEE_ROLE1) || userType.equals(UserType.EMPLOYEE_ROLE2) || userType.equals(UserType.USER_ROLE))) {
+        if (!(userType.equals(UserType.ADMIN_ROLE) || userType.equals(UserType.EMPLOYEE_ROLE1) || userType.equals(UserType.EMPLOYEE_ROLE2) || userType.equals(UserType.USER_ROLE) || userType.equals(UserType.MERCHANT_ROLE))) {
             throw new UserTypeException();
         }
     }
@@ -248,6 +247,7 @@ public class UserService {
         }
         userRepository.delete(existingUser);
         userRepository.flush();
+        log.info(Instant.now() + ": Flushed Inactive Users");
         return true;
     }
 
@@ -255,14 +255,23 @@ public class UserService {
     public Optional<User> activateRegistration(String key) {
         Optional<User> optionalUser = userRepository.findOneByActivationKey(key);
         log.debug("Activating user for activation key {}", key);
-        // create a default account for the user
-        accountService.createDefaultAccount(optionalUser.get());
         return optionalUser
                 .map(user -> {
                     user.setActive(true);
                     user.setActivationKey(null);
-                    userRepository.save(user);
-                    log.debug("Activated user: {}", user);
+                    user = userRepository.save(user);
+                    log.debug(Instant.now() + ": Activated user: {}", user);
+                    if (user.getUserType().equals(UserType.MERCHANT_ROLE)) {
+                        NewAccountRequestDTO newAccountRequestDTO = new NewAccountRequestDTO();
+                        newAccountRequestDTO.setAccountType(AccountType.CURRENT);
+                        newAccountRequestDTO.setInitialDeposit(Constants.INITIAL_DEPOSIT_AMOUNT);
+                        newAccountRequestDTO = accountService.createAccount(user, newAccountRequestDTO);
+                        Optional<Account> optionalAccount = accountRepository.findById(Long.valueOf(newAccountRequestDTO.getAccountNumber()));
+                        optionalAccount.ifPresent(account -> {
+                            account.setDefaultAccount(true);
+                            accountRepository.save(account);
+                        });
+                    }
                     return user;
                 });
     }
@@ -275,6 +284,7 @@ public class UserService {
                     user.setResetKey(RandomUtil.generateResetKey());
                     user.setResetDate(Instant.now());
                     userRepository.save(user);
+                    log.info(Instant.now() + ": Password reset for user. user: " + user.toString());
                     return user;
                 });
     }
@@ -288,6 +298,7 @@ public class UserService {
                     user.setPasswordHash(passwordEncoder.encode(newPassword));
                     user.setResetKey(null);
                     user.setResetDate(null);
+                    log.info(Instant.now() + ": Completed Password reset for user. userID: " + user.getId());
                     userRepository.save(user);
                     return user;
                 });
@@ -296,6 +307,7 @@ public class UserService {
     public void updateUserType(User requestBy, String userType) {
 
         requestBy.setUserType(userType);
+        log.info(Instant.now() + ": Updated user. userID: " + requestBy.getId());
         userRepository.save(requestBy);
     }
 
@@ -320,25 +332,38 @@ public class UserService {
         if (!(authentication instanceof AnonymousAuthenticationToken)) {
             currentUserName = authentication.getName();
         }
-        log.debug("Logged in User: '{}'", currentUserName);
+        log.debug(Instant.now() + ": Logged in User: '{}'", currentUserName);
         return userRepository.findOneByUserName(currentUserName).orElse(null);
     }
 
     @Transactional
-    public Optional<User> editUser(UserDTO userDTO) {
-        return userRepository.findById(userDTO.getId())
-                .map(user -> {
-                    user.setPhoneNumber(userDTO.getPhoneNumber());
-                    user.setUserName(userDTO.getUserName());
-                    user.setFirstName(userDTO.getFirstName());
-                    user.setLastName(userDTO.getLastName());
-                    user.setDateOfBirth(userDTO.getDateOfBirth());
-                    user.setEmail(userDTO.getEmail());
-                    user.setSsn(userDTO.getSsn());
-                    user.setActive(true);
-                    userRepository.save(user);
-                    return user;
-                });
+    public void editUser(UserDTO userDTO) {
+        Optional<User> current = userRepository.findById(userDTO.getId());
+        current.ifPresent(user -> {
+            if (!userDTO.getPhoneNumber().isEmpty()) {
+                System.out.println("Changing phone num");
+                user.setPhoneNumber(userDTO.getPhoneNumber());
+            }
+            if (!userDTO.getUserName().isEmpty()) {
+                System.out.println("Changing username");
+                user.setUserName(userDTO.getUserName());
+            }
+            if (!userDTO.getFirstName().isEmpty()) {
+                System.out.println("Changing firstname");
+                user.setFirstName(userDTO.getFirstName());
+            }
+            if (!userDTO.getLastName().isEmpty()) {
+                System.out.println("Changing lastname");
+                user.setLastName(userDTO.getLastName());
+            }
+            if (!userDTO.getEmail().isEmpty()) {
+                System.out.println("Changing email");
+                user.setEmail(userDTO.getEmail());
+            }
+            user.setActive(true);
+            userRepository.save(user);
+            log.info(Instant.now() + ": Updated user from userDTO. userID: " + user.getId());
+        });
     }
 
 
@@ -359,6 +384,7 @@ public class UserService {
             user.setActive(false);
             user.setExpireOn(Instant.now());
             userRepository.save(user);
+            log.info(Instant.now() + ": Deactivated user. userID: " + user.getId());
         });
     }
 
@@ -398,7 +424,8 @@ public class UserService {
                 if (!accountService.getDefaultAccount(user).equals(transferOrRequestDTO.getToAccount())){
                     transactionDTO.setToAccount(transferOrRequestDTO.getToAccount());}
                 else{
-                    throw new GenericRuntimeException("You can not Transfer Money to same Account");
+                    log.error(Instant.now() + ": You can not Transfer Money to same Account via account transfer");
+                    throw new GenericRuntimeException("Transfer money can't happen on same account bud ¯\\_(ツ)_/¯");
                 }
                 break;
             case "email":
@@ -406,7 +433,8 @@ public class UserService {
                     User toUserEmail = this.getUserByEmail(transferOrRequestDTO.getEmail());
                     transactionDTO.setToAccount(accountService.getDefaultAccount(toUserEmail).getId());
                 } else {
-                    throw new GenericRuntimeException("You can not Transfer Money to same Account");
+                    log.error(Instant.now() + ": You can not Transfer Money to same Account via email");
+                    throw new GenericRuntimeException("No way that is going to work ¯\\_(ツ)_/¯");
                 }
                 break;
             case "phoneNumber":
@@ -414,11 +442,13 @@ public class UserService {
                     User toUserPhone = this.getUserByPhoneNumber(transferOrRequestDTO.getPhoneNumber());
                     transactionDTO.setToAccount(accountService.getDefaultAccount(toUserPhone).getId());
                 } else {
-                    throw new GenericRuntimeException("You can not Transfer Money to same Account");
+                    log.error(Instant.now() + ": You can not Transfer Money to same Account via phoneNumber");
+                    throw new GenericRuntimeException("It won't work okay ¯\\_(ツ)_/¯");
                 }
                 break;
             default:
-                throw new GenericRuntimeException("Invalid mode of Transfer");
+                log.error(Instant.now() + ": Invalid mode of transfer");
+                throw new GenericRuntimeException("GEEK Alert ¯\\_(ツ)_/¯");
         }
         return transactionDTO;
     }

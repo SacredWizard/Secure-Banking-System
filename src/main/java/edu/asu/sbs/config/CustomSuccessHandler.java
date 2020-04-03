@@ -28,6 +28,7 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         authorities.forEach(authority -> {
             switch (authority.getAuthority()) {
+                case UserType.MERCHANT_ROLE:
                 case UserType.USER_ROLE:
                     try {
                         redirectStrategy.sendRedirect(arg0, arg1, "/api/v1/customer/home");

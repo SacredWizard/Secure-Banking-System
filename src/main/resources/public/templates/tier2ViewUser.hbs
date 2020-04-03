@@ -35,7 +35,7 @@
             <div class="form-group">
                 <label class="col-lg-3 control-label">Date Of Birth:</label>
                 <div class="col-lg-8">
-                    <input class="form-control" type="date" id="dateOfBirth" name="dateOfBirth" value="{{ dateOfBirth }}" readonly>
+                    <input class="form-control" type="date" id="dateField" name="dateOfBirth" value="{{ dateOfBirth }}" readonly>
                 </div>
             </div>
             <div class="form-group">
@@ -48,15 +48,6 @@
                 <label class="col-lg-3 control-label">SSN:</label>
                 <div class="col-lg-8">
                     <input class="form-control" type="text" id="ssn" name="ssn" value="{{ ssn }}" readonly>
-                </div>
-            </div>
-            <div class="form-group">
-                <div class="col-md-8">
-                    <input type="button" id="profileBtn" class="btn btn-primary" onclick="editProfile();editAll()" value="Edit Profile">
-                    <span></span>
-                    <input type="button" id="ssnBtn" class="btn btn-primary" onclick="editSSN()" value="Edit SSN">
-                    <span></span>
-                    <input type="submit" id="save" class="btn btn-primary" value="Save" disabled>
                 </div>
             </div>
         </form>

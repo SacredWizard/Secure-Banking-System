@@ -77,7 +77,7 @@ public class TransactionService {
                                 toAccount.setAccountBalance(toAccount.getAccountBalance() + transactionDTO.getTransactionAmount());
                             }
                         } else {
-                            throw new GenericRuntimeException("Account Balance not sufficient");
+                            throw new GenericRuntimeException("YOU ARE POOR, Account Balance not sufficient ¯\\_(ツ)_/¯");
                         }
                         break;
                     case TransactionType.CREDIT:
@@ -87,11 +87,11 @@ public class TransactionService {
                                 fromAccount.setAccountBalance(fromAccount.getAccountBalance() + transactionDTO.getTransactionAmount());
                             }
                         } else {
-                            throw new GenericRuntimeException("Account Balance not sufficient");
+                            throw new GenericRuntimeException("No money huh, Account Balance not sufficient ¯\\_(ツ)_/¯");
                         }
                         break;
                     default:
-                        throw new GenericRuntimeException("Invalid Transaction Type");
+                        throw new GenericRuntimeException("Do some valid steps bud, Invalid Transaction Type ¯\\_(ツ)_/¯");
                 }
                 TransactionAccountLog transactionAccountLog = new TransactionAccountLog();
                 transactionAccountLog.setLogDescription(transactionDTO.getDescription());
@@ -129,7 +129,7 @@ public class TransactionService {
                     requestRepository.save(request);
                 }
 //                if (transaction.getStatus().equals(StatusType.APPROVED)) {
-                    transactionHyperledgerService.save(transaction);
+                transactionHyperledgerService.save(transaction);
 //                }
                 return transaction;
             }
@@ -188,7 +188,7 @@ public class TransactionService {
                     cheque.setDeleted(true);
                     transactionRepository.save(transaction);
 //                    if (transaction.getStatus().equals(StatusType.APPROVED)) {
-                        transactionHyperledgerService.save(transaction);
+                    transactionHyperledgerService.save(transaction);
 //                    }
                     chequeRepository.save(cheque);
                     transactionAccountLogRepository.save(transactionAccountLog);
@@ -196,7 +196,7 @@ public class TransactionService {
                     return "Cheque Cleared";
                 }
             }
-            throw new GenericRuntimeException("Error clearing cheque, contact admin");
+            throw new GenericRuntimeException("TIME TO DANCE, Error clearing cheque, contact admin ¯\\_(ツ)_/¯");
         } else {
             return "Cheque Not Found";
         }
@@ -253,6 +253,6 @@ public class TransactionService {
                 accountRepository.save(fromAccount);
             }
         });
-        throw new GenericRuntimeException("Issue with denying cheque, contact admin");
+        throw new GenericRuntimeException("I just can't do this. Why don't you give up. Issue with denying cheque, contact admin ¯\\_(ツ)_/¯");
     }
 }

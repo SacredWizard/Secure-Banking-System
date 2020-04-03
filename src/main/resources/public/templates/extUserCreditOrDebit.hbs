@@ -5,19 +5,21 @@
             <div class="form-group">
                 <label class="col-lg-3 control-label">Account:</label>
                 <div class="col-lg-8">
-                    <input class="form-control" type="text" id="id" name="id" required>
+                    <input class="form-control" type="number" min="1" id="id" name="id"
+                           title="Account Number should be only digits" required>
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-lg-3 control-label">Amount:</label>
                 <div class="col-lg-8">
-                    <input class="form-control" type="text" id="amount" name="amount" required>
+                    <input class="form-control" type="text" id="amount" name="amount" pattern="^[\d]+[\.]?[\d]{0,2}$"
+                           title="Enter correct amount with maximum 2 decimal places" required>
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-lg-3 control-label">Description :</label>
                 <div class="col-lg-8">
-                    <input class="form-control" type="text" id="description" name="description" required>
+                    <input class="form-control" type="text" id="description" name="description" pattern="[a-zA-Z0-9 ]*" title="Description should not contain any characters" required>
                 </div>
             </div>
             <div class="form-group">
@@ -37,5 +39,6 @@
         </form>
     </div>
 {{/partial}}
+
 
 {{> extUserBase}}

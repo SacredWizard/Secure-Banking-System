@@ -1,4 +1,5 @@
-
 $(document).ready(function () {
-    $('#results').DataTable();
+    $('#results').DataTable({
+        "order": [[ 0, "desc" ]]
+    } );
 });

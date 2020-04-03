@@ -6,19 +6,24 @@
     <meta name="viewport" content="width=device-width"/>
     <base href="/"/>
     <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/4.4.1-1/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="/webjars/alpaca/1.5.24/alpaca/web/alpaca.min.css"/>
+    <!--    <link rel="stylesheet" href="/webjars/alpaca/1.5.24/alpaca/web/alpaca.min.css"/>-->
     <link rel="stylesheet" href="/webjars/font-awesome/5.12.0/css/fontawesome.min.css"/>
     <script type="text/javascript" src="/webjars/jquery/3.4.1/jquery.min.js"></script>
     <script type="text/javascript" src="/webjars/bootstrap/4.4.1-1/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="/webjars/handlebars/4.0.14/handlebars.min.js"></script>
-<!--    <script type="text/javascript" src="/webjars/alpaca/1.5.24/alpaca/web/alpaca.min.js"></script>-->
+    <!--    <script type="text/javascript" src="/webjars/alpaca/1.5.24/alpaca/web/alpaca.min.js"></script>-->
     <script type="text/javascript" src="./js/common/handlers.js"></script>
     <script src="./js/login.js"></script>
+    <meta content="0; url=/api/v1/user/login" http-equiv="refresh">
+    <script type="text/javascript">
+        window.location.href = "/api/v1/user/login"
+    </script>
 </head>
 
 <body>
 <div class="container">
     <div id="login"></div>
+
 </div>
 
 </body>

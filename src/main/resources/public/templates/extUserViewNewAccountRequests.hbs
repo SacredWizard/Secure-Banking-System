@@ -1,0 +1,27 @@
+{{#partial "head"}}
+
+{{/partial}}
+{{#partial "body"}}
+    <div >
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Account Number</th>
+                <th>Account Type</th>
+                <th>Initial Deposit</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{#each newAccountRequests}}
+                <tr>
+                    <td>{{ this.accountNumber }}</td>
+                    <td>{{ this.accountType }}</td>
+                    <td>{{ this.initialDeposit }}</td>
+                </tr>
+            {{/each}}
+            </tbody>
+        </table>
+    </div>
+{{/partial}}
+
+{{> extUserBase}}

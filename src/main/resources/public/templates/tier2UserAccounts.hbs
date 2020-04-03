@@ -19,7 +19,6 @@
                     <td align="center">{{ accountType }}</td>
                     <td align="center">{{ accountBalance }}</td>
                     <td>
-                        <input id="delete" class="btn btn-primary" onclick="location.href='/api/v1/tier2/modifyAccount/{{ id }}'" type="button" value="Modify Account"/>
                         <form method="post" action="/api/v1/tier2/closeAccount" class="inline">
                             <input type="text" name="id" value="{{id}}" style="display: none">
                             <input id="delete" class="btn btn-danger"  type="submit" value="Close Account"/>
