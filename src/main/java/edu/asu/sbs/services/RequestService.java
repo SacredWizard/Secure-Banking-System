@@ -35,8 +35,9 @@ public class RequestService {
     private final UserService userService;
     private final ProfileRequestRepository profileRequestRepository;
     private final AccountRepository accountRepository;
+    private final TransactionHyperledgerService transactionHyperledgerService;
 
-    public RequestService(RequestRepository requestRepository, TransactionRepository transactionRepository, TransactionAccountLogRepository transactionAccountLogRepository, AccountService accountService, UserRepository userRepository, UserService userService, ProfileRequestRepository profileRequestRepository, AccountRepository accountRepository) {
+    public RequestService(RequestRepository requestRepository, TransactionRepository transactionRepository, TransactionAccountLogRepository transactionAccountLogRepository, AccountService accountService, UserRepository userRepository, UserService userService, ProfileRequestRepository profileRequestRepository, AccountRepository accountRepository, TransactionHyperledgerService transactionHyperledgerService) {
         this.requestRepository = requestRepository;
         this.transactionRepository = transactionRepository;
         this.transactionAccountLogRepository = transactionAccountLogRepository;
@@ -45,6 +46,7 @@ public class RequestService {
         this.userService = userService;
         this.profileRequestRepository = profileRequestRepository;
         this.accountRepository = accountRepository;
+        this.transactionHyperledgerService = transactionHyperledgerService;
     }
 
     public List<ProfileRequestDTO> getAllAdminRequests() {
@@ -64,6 +66,18 @@ public class RequestService {
             RequestDTOList.add(RequestDTO);
         }
         return RequestDTOList;
+    }
+
+    public List<Request> getEmpProfileUpdateRequests() {
+        List<Request> requestList = Lists.newArrayList();
+        requestList.addAll(requestRepository.findByRequestTypeInAndIsDeleted(Lists.newArrayList(RequestType.UPDATE_EMP_PROFILE), false));
+        return requestList;
+    }
+
+    public List<Request> getUserProfileUpdateRequests() {
+        List<Request> requestList = Lists.newArrayList();
+        requestList.addAll(requestRepository.findByRequestTypeInAndIsDeleted(Lists.newArrayList(RequestType.UPDATE_USER_PROFILE), false));
+        return requestList;
     }
 
     public Optional<Request> getRequest(Long RequestId) {
@@ -124,6 +138,9 @@ public class RequestService {
         log.info(Instant.now() + ": Transaction approved/declined. ID: " + transaction.getTransactionId());
         transactionAccountLogRepository.save(transactionAccountLog);
         transactionRepository.save(transaction);
+//        if (transaction.getStatus().equals(StatusType.APPROVED)) {
+            transactionHyperledgerService.save(transaction);
+//        }
         requestRepository.save(request);
     }
 

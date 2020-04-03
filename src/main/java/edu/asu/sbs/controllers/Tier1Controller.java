@@ -11,10 +11,7 @@ import edu.asu.sbs.errors.UnauthorizedAccessExcpetion;
 import edu.asu.sbs.loader.HandlebarsTemplateLoader;
 import edu.asu.sbs.models.Request;
 import edu.asu.sbs.models.User;
-import edu.asu.sbs.services.AccountService;
-import edu.asu.sbs.services.RequestService;
-import edu.asu.sbs.services.TransactionService;
-import edu.asu.sbs.services.UserService;
+import edu.asu.sbs.services.*;
 import edu.asu.sbs.services.dto.ChequeDTO;
 import edu.asu.sbs.services.dto.ProfileRequestDTO;
 import edu.asu.sbs.services.dto.TransactionDTO;
@@ -28,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -43,15 +41,17 @@ public class Tier1Controller {
     private final TransactionService transactionService;
     private final UserService userService;
     private final RequestService requestService;
+    private final TransactionHyperledgerService transactionHyperledgerService;
 
     ObjectMapper mapper = new ObjectMapper();
 
-    public Tier1Controller(AccountService accountService, HandlebarsTemplateLoader handlebarsTemplateLoader, TransactionService transactionService, UserService userService, RequestService requestService) {
+    public Tier1Controller(AccountService accountService, HandlebarsTemplateLoader handlebarsTemplateLoader, TransactionService transactionService, UserService userService, RequestService requestService, TransactionHyperledgerService transactionHyperledgerService) {
         this.accountService = accountService;
         this.handlebarsTemplateLoader = handlebarsTemplateLoader;
         this.transactionService = transactionService;
         this.userService = userService;
         this.requestService = requestService;
+        this.transactionHyperledgerService = transactionHyperledgerService;
     }
 
     @GetMapping("/profile")
@@ -92,6 +92,24 @@ public class Tier1Controller {
         JsonNode result = mapper.valueToTree(resultMap);
         Template template = handlebarsTemplateLoader.getTemplate("tier1ViewCheques");
         return template.apply(handlebarsTemplateLoader.getContext(result));
+    }
+
+    @GetMapping("/viewHyperledgerTransactions")
+    @ResponseBody
+    public String viewHyperledgerTransactions() {
+        return transactionHyperledgerService.getAll();
+    }
+
+    @GetMapping("/getHistory/{id}")
+    @ResponseBody
+    public String getHistoryFromHyperledger(@PathVariable String id) {
+        return transactionHyperledgerService.getHistory(id);
+    }
+
+    @GetMapping("/getRecord/{id}")
+    @ResponseBody
+    public String getRecord(@PathVariable String id) {
+        return transactionHyperledgerService.getById(Long.valueOf(id));
     }
 
     @GetMapping("/transactions")
@@ -159,6 +177,17 @@ public class Tier1Controller {
 
 
     @PostMapping("/approveUpdateUserProfile")
+    @GetMapping("/profileUpdateRequests")
+    public String getEmpProfileUpdaterRequest() throws IOException {
+        ArrayList<Request> allRequests = (ArrayList<Request>) requestService.getUserProfileUpdateRequests();
+        HashMap<String, ArrayList<Request>> resultMap = new HashMap<>();
+        resultMap.put("result", allRequests);
+        JsonNode result = mapper.valueToTree(resultMap);
+        Template template = handlebarsTemplateLoader.getTemplate("profileUpdateRequests");
+        return template.apply(handlebarsTemplateLoader.getContext(result));
+    }
+
+    @PostMapping("/approveUpdateUserProfile/")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void approveUserProfile(Long requestId, HttpServletResponse response) throws IOException {
         System.out.println(requestId);
