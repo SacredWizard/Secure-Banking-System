@@ -3,7 +3,6 @@ package edu.asu.sbs.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import edu.asu.sbs.config.Constants;
 import edu.asu.sbs.globals.AccountType;
 import edu.asu.sbs.globals.AccountTypeAttributeConverter;
 import lombok.Getter;
@@ -13,8 +12,6 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -56,27 +53,27 @@ public class Account implements Serializable {
     private boolean defaultAccount;
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "account")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "account")
     private Set<TransactionAccountLog> accountLogs = new HashSet<>();
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "fromAccount")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "fromAccount")
     private Set<Transaction> debitTransactions = new HashSet<>();
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "toAccount")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "toAccount")
     private Set<Transaction> creditTransactions = new HashSet<>();
 
     @JsonManagedReference
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "chequeFromAccount")
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "chequeFromAccount")
     private Set<Cheque> fromCheques = new HashSet<>();
 
     @JsonManagedReference
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "chequeToAccount")
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "chequeToAccount")
     private Set<Cheque> toCheques = new HashSet<>();
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "linkedAccount")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "linkedAccount")
     private Set<Request> request = new HashSet<>();
 
     public void setAccountNumber(String accountNumberString) {

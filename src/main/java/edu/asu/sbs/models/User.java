@@ -99,7 +99,7 @@ public class User implements Serializable {
     private Instant expireOn;
 
     @JsonManagedReference(value = "user")
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "user")
     private Set<Account> accounts = new HashSet<>();
 
     @JsonManagedReference(value = "representative")
@@ -107,7 +107,7 @@ public class User implements Serializable {
     private Organization organization;
 
     @JsonManagedReference(value = "requestBy")
-    @OneToMany(mappedBy = "requestBy", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "requestBy", cascade = CascadeType.ALL)
     private Set<Request> requests = new HashSet<>();
 
     @JsonManagedReference(value = "linkedUser")

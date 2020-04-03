@@ -1,6 +1,7 @@
 package edu.asu.sbs.services;
 
 import com.google.common.collect.Lists;
+import edu.asu.sbs.config.Constants;
 import edu.asu.sbs.config.TransactionStatus;
 import edu.asu.sbs.config.TransactionType;
 import edu.asu.sbs.config.UserType;
@@ -16,6 +17,7 @@ import edu.asu.sbs.repositories.TransactionRepository;
 import edu.asu.sbs.repositories.UserRepository;
 import edu.asu.sbs.security.jwt.JWTFilter;
 import edu.asu.sbs.security.jwt.TokenProvider;
+import edu.asu.sbs.services.dto.NewAccountRequestDTO;
 import edu.asu.sbs.services.dto.TransactionDTO;
 import edu.asu.sbs.services.dto.TransferOrRequestDTO;
 import edu.asu.sbs.services.dto.UserDTO;
@@ -234,7 +236,7 @@ public class UserService {
     }
 
     private void validateUserType(String userType) {
-        if (!(userType.equals(UserType.ADMIN_ROLE) || userType.equals(UserType.EMPLOYEE_ROLE1) || userType.equals(UserType.EMPLOYEE_ROLE2) || userType.equals(UserType.USER_ROLE))) {
+        if (!(userType.equals(UserType.ADMIN_ROLE) || userType.equals(UserType.EMPLOYEE_ROLE1) || userType.equals(UserType.EMPLOYEE_ROLE2) || userType.equals(UserType.USER_ROLE) || userType.equals(UserType.MERCHANT_ROLE))) {
             throw new UserTypeException();
         }
     }
@@ -257,8 +259,19 @@ public class UserService {
                 .map(user -> {
                     user.setActive(true);
                     user.setActivationKey(null);
-                    userRepository.save(user);
+                    user = userRepository.save(user);
                     log.debug(Instant.now() + ": Activated user: {}", user);
+                    if (user.getUserType().equals(UserType.MERCHANT_ROLE)) {
+                        NewAccountRequestDTO newAccountRequestDTO = new NewAccountRequestDTO();
+                        newAccountRequestDTO.setAccountType(AccountType.CURRENT);
+                        newAccountRequestDTO.setInitialDeposit(Constants.INITIAL_DEPOSIT_AMOUNT);
+                        newAccountRequestDTO = accountService.createAccount(user, newAccountRequestDTO);
+                        Optional<Account> optionalAccount = accountRepository.findById(Long.valueOf(newAccountRequestDTO.getAccountNumber()));
+                        optionalAccount.ifPresent(account -> {
+                            account.setDefaultAccount(true);
+                            accountRepository.save(account);
+                        });
+                    }
                     return user;
                 });
     }

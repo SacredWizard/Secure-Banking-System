@@ -1,19 +1,71 @@
 {{#partial "body"}}
+    <form class="form-horizontal" role="form" method="post" action="/api/v1/customer/transferOrRequestOtp">
     <div class="container">
-        <form class="form-horizontal" method="POST" action="/api/v1/customer/confirmOtp">
+        <div class="form-group">
+            <div class="col-lg-8">
+                <label for="mode">In what way do you want to transfer?:</label>
+                <input class="form-control" type="text" id="mode" name="mode" value="{{mode}}" readOnly>
+            </div>
+        </div>
+        {{#if (eq mode "account")}}
+            <div class="selectField account">
+                <div class="form-group">
+                    <label class="col-lg-3 control-label">Account:</label>
+                    <div class="col-lg-8">
+                        <input class="form-control inputFields account" type="text" id="account" name="account" value="{{ account }}" readOnly>
+                    </div>
+                </div>
+            </div>
+        {{else if (eq mode "email")}}
+        <div class="selectField email">
             <div class="form-group">
-                <label class="col-lg-3 control-label">Please Enter the OTP sent to your email:</label>
+                <label class="col-lg-3 control-label">Email:</label>
                 <div class="col-lg-8">
-                    <input class="form-control" type="text" id="keyBoard" name="key" required>
+                    <input class="form-control inputFields email" type="email" id="email" name="email" value="{{ email }}" readOnly>
                 </div>
             </div>
+        </div>
+        {{else if (eq mode "phoneNumber")}}
+        <div class="selectField phoneNumber">
             <div class="form-group">
-                <div class="col-md-8">
-                    <input type="submit" class="btn btn-primary" value="Confirm OTP">
-                    <span></span>
-                    <input type="reset" class="btn btn-primary" value="Reset">
+                <label class="col-lg-3 control-label">Phone Number:</label>
+                <div class="col-lg-8">
+                    <input class="form-control inputFields phoneNumber" type="text" id="phoneNumber" name="phoneNumber" value="{{ phoneNumber }}" readOnly>
                 </div>
             </div>
+        </div>
+        {{/if}}
+        <div class="form-group">
+            <label class="col-lg-3 control-label">Amount:</label>
+            <div class="col-lg-8">
+                <input class="form-control" type="text" id="amount" name="amount" value="{{ amount }}" readOnly>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-lg-3 control-label">Description:</label>
+            <div class="col-lg-8">
+                <input class="form-control" type="text" id="description" name="description" value="{{ description }}" readOnly>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-lg-8">
+                <label for="typeOfRequest">Select Type of Request:</label>
+                <input type="text" class="form-control" id="type" name="type" value="{{type}}" readOnly>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-lg-3 control-label">Please Enter the OTP sent to your email:</label>
+            <div class="col-lg-8">
+                <input class="form-control" type="text" id="keyboard" name="otp" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-8">
+                <input type="submit" class="btn btn-primary" value="Confirm OTP">
+                <span></span>
+                <input type="reset" class="btn btn-primary" value="Reset">
+            </div>
+        </div>
         </form>
     </div>
 {{/partial}}

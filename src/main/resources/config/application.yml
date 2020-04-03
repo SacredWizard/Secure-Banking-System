@@ -85,7 +85,8 @@ server:
 #        type: TRACE
 logging:
   file:
-    name: '/home/ankit/CSE_545_SBS/Secure-Banking-System/src/main/java/edu/asu/sbs/logs/application.log'
+    name: '/Users/rakeshr/rr/ASU/ss/Secure-Banking-System/logs/application.log'
+    max-size: 10MB
   pattern:
     file: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%'
 

@@ -68,12 +68,12 @@ public class UserController {
 
     @PostMapping(path = "/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public String registerUser(ManageUserVM manageUserVM) throws IOException {
+    public String registerUser(ManageUserVM manageUserVM, String userType) throws IOException {
         log.info(manageUserVM.toString());
         if (checkPasswordLength(manageUserVM.getPassword())) {
             throw new InvalidPasswordException();
         }
-        User user = userService.registerUser(manageUserVM, manageUserVM.getPassword());
+        User user = userService.registerUser(manageUserVM, manageUserVM.getPassword(), userType);
         mailService.sendActivationEmail(user);
         Template template = handlebarsTemplateLoader.getTemplate("activate");
         return template.apply("");

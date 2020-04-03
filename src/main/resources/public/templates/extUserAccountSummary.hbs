@@ -1,9 +1,13 @@
 
 {{#partial "body"}}
     <div>
-        <br>
-        <button class="btn btn-primary" onclick="location.href='/api/v1/customer/requestNewAccount'">Request New Account</button>
-        <br>
+        {{#if (eq userType "USER_ROLE")}}
+            <br>
+            <button class="btn btn-primary" onclick="location.href='/api/v1/customer/requestNewAccount'">Request New
+                Account
+            </button>
+            <br>
+        {{/if}}
         <br>
         <table id="results" width="100%">
             <thead>
