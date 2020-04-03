@@ -79,6 +79,14 @@ public class Account implements Serializable {
     @OneToMany(mappedBy = "linkedAccount")
     private Set<Request> request = new HashSet<>();
 
+    @JsonManagedReference
+    @OneToMany(mappedBy = "acceptedBy")
+    private Set<TransferRequest> incomingTransferRequests = new HashSet<>();
+
+    @JsonManagedReference
+    @OneToMany(mappedBy = "raisedFrom")
+    private Set<TransferRequest> outgoingTransferRequests = new HashSet<>();
+
     public void setAccountNumber(String accountNumberString) {
         id = Long.parseLong(accountNumberString);
     }

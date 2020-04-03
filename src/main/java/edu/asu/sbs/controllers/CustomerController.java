@@ -159,47 +159,37 @@ public class CustomerController {
                 transactionService.createTransaction(transactionDTO, TransactionStatus.APPROVED);
                 break;
             case "REQUEST":
+                requestService.raiseTransferRequest(transferOrRequestDTO);
                 break;
             default:
                 throw new GenericRuntimeException("Invalid Type of request");
         }
-        response.sendRedirect("home");
+        response.sendRedirect("/transferOrRequest");
     }
-
+    @PostMapping("/approveRequest")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void approveTransferRequest(Long requestId, HttpServletResponse response) throws IOException, NullPointerException {
+        TransactionDTO transactionDTO = requestService.transferByRequest(requestId);
+        //transactionDTO.setTransactionType(TransactionType.DEBIT);
+        //transactionService.createTransaction(transactionDTO, TransactionStatus.APPROVED);
+        response.sendRedirect("/transferOrRequest");
+    }
+    @PostMapping("/denyRequest")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void denyTransferRequest(Long requestId, HttpServletResponse response) throws IOException, NullPointerException {
+        requestService.denyTransferRequest(requestId);
+        response.sendRedirect("/transferOrRequest");
+    }
     @GetMapping("/reviewRequests")
     @ResponseBody
     public String getReviewRequestTemplate() throws IOException {
+        User currentUser = userService.getCurrentUser();
+        List<TransferOrRequestDTO> pendingRequests = requestService.getTransferRequestsToUser(currentUser);
+        HashMap<String, List<TransferOrRequestDTO>> resultMap = new HashMap<>();
+        resultMap.put("result", pendingRequests);
+        JsonNode result = mapper.valueToTree(resultMap);
         Template template = handlebarsTemplateLoader.getTemplate("extUserTransferRequests");
-        return template.apply("");
-    }
-
-    @PutMapping("/credit")
-    void credit(@RequestBody CreditDebitDTO creditDebitRequest) {
-        User currentUser = userService.getCurrentUser();
-        try {
-            if (creditDebitRequest.getCreditDebitType() != CreditDebitType.CREDIT)
-                throw new Exception("Invalid Request");
-            accountService.makeSelfTransaction(currentUser, creditDebitRequest);
-            System.out.println("Credit success");
-        } catch (Exception e) {
-            //redirect error message
-            System.out.println(e.getMessage());
-        }
-    }
-
-    @PutMapping("/debit")
-    void debit(@RequestBody CreditDebitDTO creditDebitRequest) {
-        User currentUser = userService.getCurrentUser();
-        try {
-            if (creditDebitRequest.getCreditDebitType() != CreditDebitType.DEBIT)
-                throw new Exception("Invalid Request");
-            accountService.makeSelfTransaction(currentUser, creditDebitRequest);
-            System.out.println("Credit success");
-        } catch (Exception e) {
-            //redirect error message
-            System.out.println(e.getMessage());
-        }
-
+        return template.apply(result);
     }
 
     @GetMapping("/newAccountRequests")

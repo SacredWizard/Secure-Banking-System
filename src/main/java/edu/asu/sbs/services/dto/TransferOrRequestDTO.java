@@ -18,9 +18,13 @@ public class TransferOrRequestDTO {
     @NotNull
     private String description;
 
+    private Long requestId;
+
     @Min(1)
     @NotNull
     private Double amount;
+
+    private Long fromAccount;
 
     private Long toAccount;
 

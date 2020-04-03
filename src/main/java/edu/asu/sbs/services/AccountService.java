@@ -172,4 +172,12 @@ public class AccountService {
         }
         return pendingAccountDTOList;
     }
+
+    public List<String> getAccountNumbersForUser(User currentUser) {
+        List<Long> accountNumbers = new ArrayList<>();
+        List<Account> userAccounts = accountRepository.findByUserAndIsActive(currentUser, true);
+        return userAccounts.stream()
+                .map(account->account.getAccountNumber())
+                .collect(Collectors.toList());
+    }
 }

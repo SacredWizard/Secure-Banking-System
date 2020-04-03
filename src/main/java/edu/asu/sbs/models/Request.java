@@ -68,4 +68,9 @@ public class Request implements Serializable {
     @JoinColumn
     private ProfileRequest linkedProfileRequest;
 
+    @JsonBackReference
+    @OneToOne
+    @JoinColumn
+    private TransferRequest linkedTransferRequest;
+
 }

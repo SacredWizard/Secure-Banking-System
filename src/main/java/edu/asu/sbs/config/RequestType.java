@@ -7,7 +7,7 @@ public class RequestType {
     public static final String UPDATE_EMP_PROFILE = "UPDATE_EMP_PROFILE";
     public static final String APPROVE_CRITICAL_TRANSACTION = "APPROVE_CRITICAL_TRANSACTION";
     public static final String CREATE_NEW_ACCOUNT = "CREATE_NEW_ACCOUNT";
-    public static final String CREATE_ADDITIONAL_ACCOUNT = "CREATE_ADDITIONAL_ACCOUNT";
+    public static final String TRANSFER_BETWEEN_CUSTOMER = "CREATE_NEW_ACCOUNT";
 
     private RequestType() {
 
