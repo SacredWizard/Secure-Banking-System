@@ -42,7 +42,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.OPTIONS, "/**")
                 .antMatchers("/app/**/*.{js,html}")
                 .antMatchers("/content/**")
-                .antMatchers("/swagger-ui.html")
+//                .antMatchers("/swagger-ui.html")
                 .antMatchers("/test/**");
     }
 
@@ -69,7 +69,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 //                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/v1/user/reset-password/init", "/api/v1/user/reset-password/finish", "/api/v1/user/signup", "/api/v1/user/test", "/api/v1/user/login", "/api/v1/user/authenticate", "/api/v1/user/activate", "/api/v1/user/register", "/api/account/reset-password/init", "/api/account/password-reset/finish", "/swagger-ui.html", "/css/main.css", "/webjars/bootstrap/4.4.1-1/css/bootstrap.min.css", "/webjars/bootstrap/4.4.1-1/js/bootstrap.min.js", "/webjars/jquery/3.4.1/jquery.min.js", "/js/passwordValidation.js").permitAll()
+                .antMatchers("/api/v1/user/reset-password/init", "/api/v1/user/reset-password/finish", "/api/v1/user/signup", "/api/v1/user/test", "/api/v1/user/login", "/api/v1/user/authenticate", "/api/v1/user/activate", "/api/v1/user/register", "/api/account/reset-password/init", "/api/account/password-reset/finish", "/css/main.css", "/webjars/bootstrap/4.4.1-1/css/bootstrap.min.css", "/webjars/bootstrap/4.4.1-1/js/bootstrap.min.js", "/webjars/jquery/3.4.1/jquery.min.js", "/js/passwordValidation.js").permitAll()//, "/swagger-ui.html"
                 .antMatchers("/ap1/v1/admin/**").hasAuthority(UserType.ADMIN_ROLE)
                 .antMatchers().permitAll()
                 .anyRequest().authenticated()
