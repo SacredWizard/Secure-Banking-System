@@ -12,7 +12,7 @@
 <p th:text="#{email.activation.text1}">
     Your Secure Bank account has been created, please click on the URL below to activate it:
 </p>
-<p th:text="#{email.otp.body(${String.valueOf(user.getOtp())})}">
+<p th:text="#{email.otp.body(${user.getOtp()})}">
 
 </p>
 <p>

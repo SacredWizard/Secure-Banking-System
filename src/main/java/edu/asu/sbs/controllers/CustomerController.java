@@ -165,7 +165,7 @@ public class CustomerController {
         if (otpService.validateOtp(otp)) {
             User user = userService.getCurrentUser();
             accountService.getAccountById(transactionDTO.getFromAccount()).ifPresent(fromUser -> {
-                if (fromUser.getUser() == user) {
+                if (fromUser.getUser().getId().equals(user.getId())) {
                     transactionDTO.setTransactionType(TransactionType.DEBIT);
                     transactionService.createTransaction(transactionDTO, TransactionStatus.APPROVED);
                 } else {
