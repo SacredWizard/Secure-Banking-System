@@ -29,7 +29,8 @@
                     <tr>
                         <td align="center">{{ modifiedDate }}</td>
                         <td align="center">{{ createdDate }}</td>
-                        <td align="center">{{ transactionId }}</td>
+                        <td align="center"><a
+                                href="/api/v1/tier1/getHistory/{{ transactionId }}">{{ transactionId }}</a></td>
                         <td align="center">{{ status }}</td>
                         <td align="center">{{ description }}</td>
                         <td align="center">{{ fromAccount }}</td>

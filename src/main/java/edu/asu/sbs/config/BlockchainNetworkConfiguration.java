@@ -24,7 +24,7 @@ import java.io.IOException;
 public class BlockchainNetworkConfiguration {
 
 
-    @Value("classpath:fabricconnections/connection-profile-local.json")
+    @Value("classpath:fabricconnections/connection-profile.json")
     private transient Resource connectionFile;
 
     @Bean

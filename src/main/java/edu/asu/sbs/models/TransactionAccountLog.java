@@ -13,6 +13,8 @@ import java.time.Instant;
 @Setter
 @Entity
 public class TransactionAccountLog implements Serializable {
+    private static final long serialVersionUID = -1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long logNumber;

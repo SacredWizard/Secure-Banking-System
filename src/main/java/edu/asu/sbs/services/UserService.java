@@ -7,14 +7,8 @@ import edu.asu.sbs.config.TransactionType;
 import edu.asu.sbs.config.UserType;
 import edu.asu.sbs.errors.*;
 import edu.asu.sbs.globals.AccountType;
-import edu.asu.sbs.models.Account;
-import edu.asu.sbs.models.Transaction;
-import edu.asu.sbs.models.TransactionAccountLog;
-import edu.asu.sbs.models.User;
-import edu.asu.sbs.repositories.AccountRepository;
-import edu.asu.sbs.repositories.TransactionAccountLogRepository;
-import edu.asu.sbs.repositories.TransactionRepository;
-import edu.asu.sbs.repositories.UserRepository;
+import edu.asu.sbs.models.*;
+import edu.asu.sbs.repositories.*;
 import edu.asu.sbs.security.jwt.JWTFilter;
 import edu.asu.sbs.security.jwt.TokenProvider;
 import edu.asu.sbs.services.dto.NewAccountRequestDTO;
@@ -43,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.sql.Date;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
@@ -60,9 +55,10 @@ public class UserService {
     private final TransactionAccountLogRepository transactionAccountLogRepository;
     private final OTPService otpService;
     private final AccountService accountService;
+    private final SessionRepository sessionRepository;
 
 
-    public UserService(UserRepository userRepository, AccountRepository accountRepository, TransactionRepository transactionRepository, AuthenticationManagerBuilder authenticationManagerBuilder, TokenProvider tokenProvider, PasswordEncoder passwordEncoder, TransactionAccountLogRepository transactionAccountLogRepository, OTPService otpService, AccountService accountService) {
+    public UserService(UserRepository userRepository, AccountRepository accountRepository, TransactionRepository transactionRepository, AuthenticationManagerBuilder authenticationManagerBuilder, TokenProvider tokenProvider, PasswordEncoder passwordEncoder, TransactionAccountLogRepository transactionAccountLogRepository, OTPService otpService, AccountService accountService, SessionRepository sessionRepository) {
         this.userRepository = userRepository;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.tokenProvider = tokenProvider;
@@ -72,6 +68,7 @@ public class UserService {
         this.transactionAccountLogRepository = transactionAccountLogRepository;
         this.otpService = otpService;
         this.accountService = accountService;
+        this.sessionRepository = sessionRepository;
     }
 
     @Transactional
@@ -189,6 +186,7 @@ public class UserService {
         String jwt = tokenProvider.createToken(authentication, rememberMe);
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
+        this.startSession();
         return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
     }
 
@@ -315,6 +313,22 @@ public class UserService {
         return userRepository.findByUserTypeInAndIsActive(Lists.newArrayList(UserType.USER_ROLE), true);
     }
 
+    public void startSession() {
+        Instant sessionStart = Instant.now();
+        Session session = new Session();
+        session.setLinkedUser(getCurrentUser());
+        session.setSessionStart(Instant.now());
+        session.setSessionTimeout(Constants.EXPIRE_MINS);
+        session.setSessionEnd(sessionStart.plus(Constants.EXPIRE_MINS, ChronoUnit.MINUTES));
+        //session.setIp();
+        sessionRepository.save(session);
+    }
+
+    public void endSession() {
+        Session session = sessionRepository.findByLinkedUser(getCurrentUser());
+        session.setSessionEnd(Instant.now());
+        sessionRepository.save(session);
+    }
     @Getter
     @Setter
     public static class JWTToken {
@@ -390,6 +404,7 @@ public class UserService {
 
 
     public String logout(HttpServletRequest request, HttpServletResponse response) {
+        endSession();
         User user = getCurrentUser();
         otpService.clearOTP(user.getEmail());
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -415,14 +430,15 @@ public class UserService {
     public TransactionDTO transferByEmailOrPhone(TransferOrRequestDTO transferOrRequestDTO){
         User user = this.getCurrentUser();
         TransactionDTO transactionDTO = new TransactionDTO();
-        transactionDTO.setFromAccount(accountService.getDefaultAccount(user).getId());
+        transactionDTO.setFromAccount(transferOrRequestDTO.getFromAccount());
         transactionDTO.setDescription(transferOrRequestDTO.getDescription());
         transactionDTO.setTransactionAmount(transferOrRequestDTO.getAmount());
         transactionDTO.setTransactionType(TransactionType.DEBIT);
         switch (transferOrRequestDTO.getMode()) {
             case "account":
                 if (!accountService.getDefaultAccount(user).equals(transferOrRequestDTO.getToAccount())){
-                    transactionDTO.setToAccount(transferOrRequestDTO.getToAccount());}
+                    if(!transferOrRequestDTO.getType().equals("REQUEST"))
+                        transactionDTO.setToAccount(transferOrRequestDTO.getToAccount());}
                 else{
                     log.error(Instant.now() + ": You can not Transfer Money to same Account via account transfer");
                     throw new GenericRuntimeException("Transfer money can't happen on same account bud ¯\\_(ツ)_/¯");

@@ -6,7 +6,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -16,9 +16,9 @@ public class Session implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long sessionKey;
 
-    private Timestamp sessionStart;
+    private Instant sessionStart;
 
-    private Timestamp sessionEnd;
+    private Instant sessionEnd;
 
     private Integer sessionTimeout;
 
