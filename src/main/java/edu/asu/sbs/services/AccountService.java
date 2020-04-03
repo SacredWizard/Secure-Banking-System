@@ -82,7 +82,7 @@ public class AccountService {
             log.info(Instant.now() + ": Credited:" + amount + " amount to the account: " + account.getAccountNumber());
             accountRepository.save(account);
         } catch (Exception e) {
-            throw new Exception("Failed to credit from account " + account.getAccountNumber(), e);
+            throw new Exception("¯\\_(ツ)_/¯ Failed to credit from account " + account.getAccountNumber(), e);
         }
     }
 
@@ -93,31 +93,35 @@ public class AccountService {
     @Transactional
     public void makeSelfTransaction(User currentUser, CreditDebitDTO creditDebitRequest) throws Exception {
         List<Account> currentUserAccounts = accountRepository.findByUserAndLock(currentUser);
+        boolean updated = false;
         for (Account currentUserAccount : currentUserAccounts) {
             if (currentUserAccount.getId().equals(creditDebitRequest.getId())) {
-                System.out.println("Accounts :\n" + currentUserAccount.getId());
+                log.info("Accounts :\n" + currentUserAccount.getId());
                 if (creditDebitRequest.getCreditDebitType() == CreditDebitType.CREDIT) {
                     credit(currentUserAccount, creditDebitRequest.getAmount());
                 } else if (creditDebitRequest.getCreditDebitType() == CreditDebitType.DEBIT) {
                     debit(currentUserAccount, creditDebitRequest.getAmount());
                 }
-                return;
+                updated = true;
+                break;
             }
         }
-        throw new Exception("Invalid Account");
+        if (!updated) {
+            throw new GenericRuntimeException("Invalid Account ¯\\_(ツ)_/¯");
+        }
     }
 
     private void debit(Account account, Double amount) throws Exception {
         try {
             Double currentBalance = account.getAccountBalance();
             if (currentBalance < amount)
-                throw new Exception("Insufficient Funds");
+                throw new Exception("Insufficient Funds, feeling poor huh ¯\\_(ツ)_/¯");
             if (account.isActive()) {
                 account.setAccountBalance(currentBalance - amount);
                 log.info(Instant.now() + ": Debited:" + amount + " amount from the account: " + account.getAccountNumber());
                 accountRepository.save(account);
             } else {
-                throw new Exception("Inactive account");
+                throw new Exception("Inactive account, SAD no account ¯\\_(ツ)_/¯");
             }
         } catch (Exception e) {
             log.error(Instant.now() + "Failed to debit from account " + account.getAccountNumber());
@@ -141,7 +145,7 @@ public class AccountService {
                 });
             } else {
                 log.warn(Instant.now() + ": Cannot close the default account");
-                throw new GenericRuntimeException("Cannot close the default account");
+                throw new GenericRuntimeException("Cannot close the default account ¯\\_(ツ)_/¯");
             }
         }
     }

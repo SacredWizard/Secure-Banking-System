@@ -117,7 +117,7 @@ public class Tier2Controller {
         }
         if (!(current.getUserType().equals(UserType.USER_ROLE))) {
             log.warn("GET request: tier2 employee unauthorised request access");
-            throw new Exceptions("401", "Unauthorized request !!");
+            throw new Exceptions("401", "Very BAD!, Unauthorized request !! ¯\\_(ツ)_/¯");
         }
 
         userService.deleteUser(id);

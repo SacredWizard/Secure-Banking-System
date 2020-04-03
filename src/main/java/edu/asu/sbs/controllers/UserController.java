@@ -84,7 +84,7 @@ public class UserController {
     public void activate(@RequestParam(value = "key") String key, HttpServletResponse response) throws IOException {
         Optional<User> user = userService.activateRegistration(key);
         if (!user.isPresent()) {
-            throw new AccountResourceException("No user was found for this activation key");
+            throw new AccountResourceException("LOL! No user was found for this activation key ¯\\_(ツ)_/¯");
         }
         response.sendRedirect("/api/v1/user/login");
     }
@@ -124,7 +124,7 @@ public class UserController {
                 userService.completePasswordReset(keyAndPassword.getNewPassword(), keyAndPassword.getKey());
 
         if (!user.isPresent()) {
-            throw new AccountResourceException("No user was found for this reset key");
+            throw new AccountResourceException("No sniffing around, No user was found for this reset key ¯\\_(ツ)_/¯");
         }
         response.sendRedirect("/api/v1/user/login");
     }

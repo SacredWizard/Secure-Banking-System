@@ -67,7 +67,7 @@ public class AdminController {
         mapper.setDateFormat(df);
         if (user == null) {
             log.info("GET request: Unauthorized request for admin user detail");
-            throw new UnauthorizedAccessExcpetion("401", "Unauthorized Access !");
+            throw new UnauthorizedAccessExcpetion("401", "Unauthorized Access ! Don't sneak behave good -__- ¯\\_(ツ)_/¯");
         }
 
         JsonNode result = mapper.valueToTree(user);
@@ -104,7 +104,7 @@ public class AdminController {
     public void deleteUser(@PathVariable Long id, HttpServletResponse response) throws Exceptions, IOException {
         User current = userService.getUserByIdAndActive(id);
         if (current == null) {
-            throw new Exceptions("404", " User not found");
+            throw new Exceptions("404", "No scene, User not found ¯\\_(ツ)_/¯");
         }
 
         userService.deleteUser(id);

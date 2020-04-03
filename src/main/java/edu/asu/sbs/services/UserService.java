@@ -425,7 +425,7 @@ public class UserService {
                     transactionDTO.setToAccount(transferOrRequestDTO.getToAccount());}
                 else{
                     log.error(Instant.now() + ": You can not Transfer Money to same Account via account transfer");
-                    throw new GenericRuntimeException("You can not Transfer Money to same Account");
+                    throw new GenericRuntimeException("Transfer money can't happen on same account bud ¯\\_(ツ)_/¯");
                 }
                 break;
             case "email":
@@ -434,7 +434,7 @@ public class UserService {
                     transactionDTO.setToAccount(accountService.getDefaultAccount(toUserEmail).getId());
                 } else {
                     log.error(Instant.now() + ": You can not Transfer Money to same Account via email");
-                    throw new GenericRuntimeException("You can not Transfer Money to same Account");
+                    throw new GenericRuntimeException("No way that is going to work ¯\\_(ツ)_/¯");
                 }
                 break;
             case "phoneNumber":
@@ -443,12 +443,12 @@ public class UserService {
                     transactionDTO.setToAccount(accountService.getDefaultAccount(toUserPhone).getId());
                 } else {
                     log.error(Instant.now() + ": You can not Transfer Money to same Account via phoneNumber");
-                    throw new GenericRuntimeException("You can not Transfer Money to same Account");
+                    throw new GenericRuntimeException("It won't work okay ¯\\_(ツ)_/¯");
                 }
                 break;
             default:
                 log.error(Instant.now() + ": Invalid mode of transfer");
-                throw new GenericRuntimeException("Invalid mode of Transfer");
+                throw new GenericRuntimeException("GEEK Alert ¯\\_(ツ)_/¯");
         }
         return transactionDTO;
     }

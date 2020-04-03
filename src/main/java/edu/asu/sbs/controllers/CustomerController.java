@@ -79,7 +79,7 @@ public class CustomerController {
         mapper.setDateFormat(df);
         if (currentUser == null) {
             log.info("GET request: Unauthorized request for User detail");
-            throw new UnauthorizedAccessExcpetion("401", "Unauthorized Access !");
+            throw new UnauthorizedAccessExcpetion("401", "Unauthorized Access !, SNEAAKYY ¯\\_(ツ)_/¯");
         }
         JsonNode result = mapper.valueToTree(currentUser);
         Template template = handlebarsTemplateLoader.getTemplate("profileExtUser");
@@ -104,11 +104,10 @@ public class CustomerController {
             if (creditDebitRequest.getCreditDebitType() == CreditDebitType.CREDIT || creditDebitRequest.getCreditDebitType() == CreditDebitType.DEBIT)
                 accountService.makeSelfTransaction(currentUser, creditDebitRequest);
             else
-                throw new GenericRuntimeException("Invalid Request, Please Try again");
+                throw new GenericRuntimeException("Behave like a normal user, Please Try again ¯\\_(ツ)_/¯");
             log.info(creditDebitRequest.getCreditDebitType() + " Success for account " + creditDebitRequest.getId());
         } catch (Exception e) {
-            //redirect error message
-            System.out.println(e.getMessage());
+            throw new GenericRuntimeException("WHY DON'T YOU PASS YOUR ACCOUNT NUMBER INSTEAD ¯\\_(ツ)_/¯");
         }
         response.sendRedirect("home");
     }
@@ -146,17 +145,17 @@ public class CustomerController {
         Optional<Account> fromAccount = accountService.getAccountById(transactionDTO.getFromAccount());
         if (fromAccount.isPresent()) {
             User fromUser = fromAccount.get().getUser();
-            if (user == fromUser) {
+            if (user.getId().equals(fromUser.getId())) {
                 Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 otpService.generateOTP(auth).ifPresent(mailService::sendOTPMail);
                 JsonNode result = mapper.valueToTree(transactionDTO);
                 Template template = handlebarsTemplateLoader.getTemplate("otpTransferFunds");
                 return template.apply(handlebarsTemplateLoader.getContext(result));
             } else {
-                throw new GenericRuntimeException("Please give your account number");
+                throw new GenericRuntimeException("Why don't you Please give your account number ¯\\_(ツ)_/¯");
             }
         }
-        throw new GenericRuntimeException("User is not valid");
+        throw new GenericRuntimeException("User is not valid, be valid atleast now ¯\\_(ツ)_/¯");
     }
 
     @PreAuthorize("hasAnyAuthority('" + UserType.USER_ROLE + "," + UserType.MERCHANT_ROLE + "')")
@@ -170,11 +169,11 @@ public class CustomerController {
                     transactionDTO.setTransactionType(TransactionType.DEBIT);
                     transactionService.createTransaction(transactionDTO, TransactionStatus.APPROVED);
                 } else {
-                    throw new GenericRuntimeException("Please give your account number");
+                    throw new GenericRuntimeException("Please give your account number, not some one else's ¯\\_(ツ)_/¯");
                 }
             });
         } else {
-            throw new GenericRuntimeException("Invalid OTP");
+            throw new GenericRuntimeException("Invalid OTP, Go check your email, dont be silly ¯\\_(ツ)_/¯");
         }
 
         response.sendRedirect("home");
@@ -202,7 +201,7 @@ public class CustomerController {
             case "REQUEST":
                 break;
             default:
-                throw new GenericRuntimeException("Invalid Type of request");
+                throw new GenericRuntimeException("Invalid Type of request, dont cheat ¯\\_(ツ)_/¯");
         }
         response.sendRedirect("home");
         return null;
@@ -223,7 +222,7 @@ public class CustomerController {
             case "REQUEST":
                 break;
             default:
-                throw new GenericRuntimeException("Invalid Type of request");
+                throw new GenericRuntimeException("Invalid Type of request, ¯\\_(ツ)_/¯");
         }
         response.sendRedirect("home");
     }
@@ -273,10 +272,10 @@ public class CustomerController {
                 Template template = handlebarsTemplateLoader.getTemplate("extUserModifyAccount");
                 return template.apply(handlebarsTemplateLoader.getContext(result));
             } else {
-                throw new GenericRuntimeException("You can only modify your account");
+                throw new GenericRuntimeException("You can only modify your account ¯\\_(ツ)_/¯");
             }
         }
-        throw new GenericRuntimeException("You can only modify your account");
+        throw new GenericRuntimeException("You can only modify your account ¯\\_(ツ)_/¯");
     }
 
     @PreAuthorize("hasAnyAuthority('" + UserType.USER_ROLE + "," + UserType.MERCHANT_ROLE + "')")
@@ -287,7 +286,7 @@ public class CustomerController {
         User requester = userService.getCurrentUser();
         account.ifPresent(acc -> {
             if (acc.getAccountType().equals(accountType)) {
-                throw new GenericRuntimeException("Account already of the requested type");
+                throw new GenericRuntimeException("Account already of the requested type, NO MORE for You ¯\\_(ツ)_/¯");
             }
             switch (accountType) {
                 case CURRENT:
@@ -300,7 +299,7 @@ public class CustomerController {
                     requestService.createAccountTypeChangeRequest(acc, AccountType.CHECKING, requester);
                     break;
                 default:
-                    throw new GenericRuntimeException("Account Type is not correct:" + accountType);
+                    throw new GenericRuntimeException("¯\\_(ツ)_/¯ Account Type is not correct:" + accountType);
             }
         });
         response.sendRedirect("home");
