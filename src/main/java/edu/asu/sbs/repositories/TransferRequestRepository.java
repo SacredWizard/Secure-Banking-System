@@ -9,6 +9,6 @@ import java.util.Optional;
 
 public interface TransferRequestRepository extends CrudRepository<TransferRequest, Long> {
     Optional <TransferRequest> findByRequestId(Long requestId);
-    List<TransferRequest> findByAcceptedBy(Account acceptingAccount);
-    List<TransferRequest> findByRaisedFrom(Account acceptingAccount);
+    List<TransferRequest> findByAcceptedByAndTransferRequestStatus(Account acceptingAccount, String status);
+    List<TransferRequest> findByRaisedFromAndTransferRequestStatus(Account acceptingAccount, String status);
 }

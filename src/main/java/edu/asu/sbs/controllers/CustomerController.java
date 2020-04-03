@@ -164,7 +164,7 @@ public class CustomerController {
             default:
                 throw new GenericRuntimeException("Invalid Type of request");
         }
-        response.sendRedirect("/transferOrRequest");
+        response.sendRedirect("transferOrRequest");
     }
     @PostMapping("/approveRequest")
     @ResponseStatus(HttpStatus.ACCEPTED)
@@ -172,13 +172,13 @@ public class CustomerController {
         TransactionDTO transactionDTO = requestService.transferByRequest(requestId);
         //transactionDTO.setTransactionType(TransactionType.DEBIT);
         //transactionService.createTransaction(transactionDTO, TransactionStatus.APPROVED);
-        response.sendRedirect("/transferOrRequest");
+        response.sendRedirect("reviewRequests");
     }
     @PostMapping("/denyRequest")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void denyTransferRequest(Long requestId, HttpServletResponse response) throws IOException, NullPointerException {
         requestService.denyTransferRequest(requestId);
-        response.sendRedirect("/transferOrRequest");
+        response.sendRedirect("reviewRequests");
     }
     @GetMapping("/reviewRequests")
     @ResponseBody
@@ -189,7 +189,7 @@ public class CustomerController {
         resultMap.put("result", pendingRequests);
         JsonNode result = mapper.valueToTree(resultMap);
         Template template = handlebarsTemplateLoader.getTemplate("extUserTransferRequests");
-        return template.apply(result);
+        return template.apply(handlebarsTemplateLoader.getContext(result));
     }
 
     @GetMapping("/newAccountRequests")

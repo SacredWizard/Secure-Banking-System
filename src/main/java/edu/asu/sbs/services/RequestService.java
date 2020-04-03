@@ -285,7 +285,7 @@ public class RequestService {
         List<Account> accounts = accountRepository.findByUserAndIsActive(currentUser, true);
         List<TransferOrRequestDTO> transferRequestList = new ArrayList<>();
         for(Account account:accounts) {
-            transferRequestList.addAll(transferRequestRepository.findByAcceptedBy(account).stream()
+            transferRequestList.addAll(transferRequestRepository.findByAcceptedByAndTransferRequestStatus(account, "PENDING").stream()
                     .map(transferRequest
                             -> getTransferOrRequestDto(transferRequest))
                     .collect(Collectors.toList()));
@@ -297,7 +297,7 @@ public class RequestService {
         List<Account> accounts = accountRepository.findByUserAndIsActive(currentUser, true);
         List<TransferOrRequestDTO> transferRequestList = new ArrayList<>();
         for(Account account:accounts) {
-            transferRequestList.addAll(transferRequestRepository.findByRaisedFrom(account).stream()
+            transferRequestList.addAll(transferRequestRepository.findByRaisedFromAndTransferRequestStatus(account,"PENDING").stream()
                     .map(transferRequest
                             -> getTransferOrRequestDto(transferRequest))
                     .collect(Collectors.toList()));
