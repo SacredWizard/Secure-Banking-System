@@ -109,7 +109,7 @@ public class Tier2Controller {
         return template.apply(handlebarsTemplateLoader.getContext(result));
     }
 
-    @GetMapping("/delete/{id}")
+    //@GetMapping("/delete/{id}")
     public void deleteUser(@PathVariable Long id, HttpServletResponse response) throws Exceptions, IOException {
         User current = userService.getUserByIdAndActive(id);
         if (current == null) {

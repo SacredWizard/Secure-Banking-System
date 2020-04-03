@@ -11,7 +11,7 @@
                 <th align="center">Account Number</th>
                 <th align="center">Account Type</th>
                 <th align="center">Account Balance</th>
-                <th align="center">Delete Account</th>
+                <th align="center">Modify Account</th>
             </tr>
             </thead>
             <tbody>
@@ -23,10 +23,10 @@
                         <td align="center">{{ accountBalance }}</td>
                         <td align="center">
                             {{#if defaultAccount }}
-                                <input id="modify" class="btn btn-primary"  type="button" name="modify" onclick="location.href='/api/v1/customer/modify/{{ id }}'" value="Modify"/>
+                                <input id="modify" class="btn btn-primary inline"  type="button" name="modify" onclick="location.href='/api/v1/customer/modify/{{ id }}'" value="Modify"/>
                             {{else}}
                                 <input id="modify" class="btn btn-primary inline"  type="button" name="modify" onclick="location.href='/api/v1/customer/modify/{{ id }}'" value="Modify"/>
-                                <input id="delete" class="btn btn-danger inline"  type="button" name="delete" onclick="location.href='/api/v1/customer/delete/{{ id }}'" value="Delete"/>
+{{!--                                 <input id="delete" class="btn btn-danger inline"  type="button" name="delete" onclick="location.href='/api/v1/customer/delete/{{ id }}'" value="Delete"/> --}}
                             {{/if}}
                         </td>
                     </tr>
