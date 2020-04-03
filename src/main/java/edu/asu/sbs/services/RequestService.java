@@ -57,7 +57,7 @@ public class RequestService {
             RequestDTO.setRoleChange(request.getLinkedProfileRequest().isChangeRoleRequest());
             RequestDTO.setDescription(request.getDescription());
             RequestDTO.setCreatedDate(request.getCreatedDate());
-            RequestDTO.setModifiedDate(request.getModifiedDate());
+            //RequestDTO.setModifiedDate(request.getModifiedDate());
             RequestDTO.setUserId(request.getRequestBy().getId());
             RequestDTOList.add(RequestDTO);
         }
