@@ -133,7 +133,7 @@ public class RequestService {
                 transaction.setStatus(StatusType.DECLINED);
                 break;
             default:
-                throw new GenericRuntimeException("Invalid Action Buddy ¯\\_(ツ)_/¯");
+                throw new GenericRuntimeException("Invalid Action");
         }
         transactionAccountLog.setLogTime(Instant.now());
         transactionAccountLog.setLogDescription(transactionAccountLog.getLogDescription() + "\n Transaction Approved on " + Instant.now());

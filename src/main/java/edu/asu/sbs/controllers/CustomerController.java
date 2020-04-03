@@ -227,6 +227,7 @@ public class CustomerController {
         }
         response.sendRedirect("transferOrRequest");
     }
+    @PreAuthorize("hasAnyAuthority('" + UserType.USER_ROLE + "," + UserType.MERCHANT_ROLE + "')")
     @PostMapping("/approveRequest")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void approveTransferRequest(Long requestId, HttpServletResponse response) throws IOException, NullPointerException {
@@ -243,6 +244,8 @@ public class CustomerController {
         requestService.denyTransferRequest(requestId);
         response.sendRedirect("reviewRequests");
     }
+
+    @PreAuthorize("hasAnyAuthority('" + UserType.USER_ROLE + "," + UserType.MERCHANT_ROLE + "')")
     @GetMapping("/reviewRequests")
     @ResponseBody
     public String getReviewRequestTemplate() throws IOException {
