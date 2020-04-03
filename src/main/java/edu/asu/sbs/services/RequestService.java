@@ -9,12 +9,8 @@ import edu.asu.sbs.errors.GenericRuntimeException;
 import edu.asu.sbs.globals.AccountType;
 import edu.asu.sbs.models.*;
 import edu.asu.sbs.repositories.*;
-import edu.asu.sbs.services.dto.AccountTypeChangeDTO;
-import edu.asu.sbs.services.dto.DetailedNewAccountRequestDTO;
-import edu.asu.sbs.services.dto.ProfileRequestDTO;
-import edu.asu.sbs.services.dto.Tier2RequestsDTO;
-import lombok.extern.slf4j.Slf4j;
 import edu.asu.sbs.services.dto.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +37,7 @@ public class RequestService {
     private final TransferRequestRepository transferRequestRepository;
     private final TransactionService transactionService;
 
-    public RequestService(RequestRepository requestRepository, TransactionRepository transactionRepository, TransactionAccountLogRepository transactionAccountLogRepository, AccountService accountService, UserRepository userRepository, UserService userService, ProfileRequestRepository profileRequestRepository, AccountRepository accountRepository, TransactionHyperledgerService transactionHyperledgerService, TransferRequestRepository, transferRequestRepository) {
+    public RequestService(RequestRepository requestRepository, TransactionRepository transactionRepository, TransactionAccountLogRepository transactionAccountLogRepository, AccountService accountService, UserRepository userRepository, UserService userService, ProfileRequestRepository profileRequestRepository, AccountRepository accountRepository, TransactionHyperledgerService transactionHyperledgerService, TransferRequestRepository transferRequestRepository, TransactionService transactionService) {
         this.requestRepository = requestRepository;
         this.transactionRepository = transactionRepository;
         this.transactionAccountLogRepository = transactionAccountLogRepository;
