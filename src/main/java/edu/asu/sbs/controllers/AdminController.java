@@ -137,7 +137,7 @@ public class AdminController {
     }
 
     @PostMapping("/requests/approve")
-    public void approveEdit(Long id) throws IllegalStateException {
+    public void approveEdit(Long id, HttpServletResponse response) throws IllegalStateException, IOException {
 
         Optional<Request> request = requestService.getRequest(id);
         User user = userService.getCurrentUser();
@@ -158,10 +158,11 @@ public class AdminController {
                     throw new IllegalStateException("Unexpected RequestType: " + req.getRequestType());
             }
         });
+        response.sendRedirect("/api/v1/admin/requests");
     }
 
     @PostMapping("/requests/decline")
-    public void declineEdit(Long id) throws IllegalStateException {
+    public void declineEdit(Long id, HttpServletResponse response) throws IllegalStateException, IOException {
 
         Optional<Request> request = requestService.getRequest(id);
         User user = userService.getCurrentUser();
@@ -178,6 +179,7 @@ public class AdminController {
                     throw new IllegalStateException("Unexpected RequestType: " + req.getRequestType());
             }
         });
+        response.sendRedirect("/api/v1/admin/requests");
     }
 
     @GetMapping("/logDownload")
@@ -221,24 +223,16 @@ public class AdminController {
         }
     }
 
-    @PostMapping("/declineUpdateEmpProfile/{requestId}")
-    private void declineEmployeeProfile(Long requestId) {
-        Optional<Request> request = requestService.getRequest(requestId);
-        User user = userService.getCurrentUser();
-        request.ifPresent(req -> {
-            if (RequestType.UPDATE_EMP_PROFILE.equals(req.getRequestType()) && req.getStatus().equals(StatusType.PENDING)) {
-                requestService.updateUserProfile(req, user, RequestType.UPDATE_EMP_PROFILE, StatusType.DECLINED);
-            }
-        });
-    }
-
     /* Admin can edit his own details */
     @PostMapping("/details/edit")
-    private void updateAdminProfile(UserDTO userDTO) {
+    public void updateAdminProfile(UserDTO userDTO, HttpServletResponse response) throws IOException {
         User user = userService.getCurrentUser();
-        if (user.getUserType() == UserType.ADMIN_ROLE) {
+        if (user.getUserType().equals(UserType.ADMIN_ROLE)) {
+            userDTO.setId(user.getId());
+            System.out.println(userDTO);
             userService.editUser(userDTO);
         }
+        response.sendRedirect("/api/v1/admin/requests");
     }
 
     @PostMapping("/employee/closeAccount")
@@ -248,58 +242,7 @@ public class AdminController {
         } else {
             throw new IllegalStateException("Incorrect Id: " + id);
         }
-        response.sendRedirect("requests");
+        response.sendRedirect("/api/v1/admin/requests");
     }
 
-     /*
-    @GetMapping("/profileUpdateRequests")
-    public String geUserProfileUpdaterRequests() throws IOException {
-        List<ProfileRequestDTO> allRequests;
-        allRequests = requestService.getAllProfileUpdateRequests(RequestType.UPDATE_EMP_PROFILE);
-        HashMap<String, List<ProfileRequestDTO>> resultMap = new HashMap<>();
-        resultMap.put("result", allRequests);
-        JsonNode result = mapper.valueToTree(resultMap);
-        Template template = handlebarsTemplateLoader.getTemplate("profileUpdateRequests");
-        return template.apply(handlebarsTemplateLoader.getContext(result));
-    }
-
-    @PostMapping("/approveUpdateEmpProfile/{requestId}")
-    private void approveEmployeeProfile(Long requestId, ProfileRequestDTO requestDTO) {
-        Optional<Request> request = requestService.getRequest(requestId);
-        User user = userService.getCurrentUser();
-        request.ifPresent(req -> {
-            if (RequestType.UPDATE_EMP_PROFILE.equals(req.getRequestType()) && req.getStatus().equals(StatusType.PENDING)) {
-                requestService.updateUserProfile(req, user, RequestType.UPDATE_EMP_PROFILE, StatusType.APPROVED);
-            }
-        });
-    }
-
-    @GetMapping("/modifyAccount/{id}")
-    public String getModifyAccountTemplate(@PathVariable Long id) throws IOException {
-        HashMap<String, Long> resultMap = Maps.newHashMap();
-        resultMap.put("id", id);
-        JsonNode result = mapper.valueToTree(resultMap);
-        Template template = handlebarsTemplateLoader.getTemplate("tier2ModifyAccount");
-        return template.apply(handlebarsTemplateLoader.getContext(result));
-    }
-
-    @PostMapping("/modifyAccount")
-    public void modifyUserAccount(Long id, AccountType accountType, HttpServletResponse response) throws IllegalStateException, IOException {
-
-        switch (accountType) {
-            case CHECKING:
-                accountService.updateAccountType(id, AccountType.CHECKING);
-                break;
-            case SAVINGS:
-                accountService.updateAccountType(id, AccountType.SAVINGS);
-                break;
-            case CURRENT:
-                accountService.updateAccountType(id, AccountType.CURRENT);
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + accountType);
-        }
-        response.sendRedirect("requests");
-    }
-    */
 }

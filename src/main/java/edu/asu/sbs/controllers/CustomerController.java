@@ -9,12 +9,11 @@ import edu.asu.sbs.config.TransactionType;
 import edu.asu.sbs.config.UserType;
 import edu.asu.sbs.errors.GenericRuntimeException;
 import edu.asu.sbs.errors.UnauthorizedAccessExcpetion;
+import edu.asu.sbs.globals.AccountType;
 import edu.asu.sbs.globals.CreditDebitType;
 import edu.asu.sbs.loader.HandlebarsTemplateLoader;
 import edu.asu.sbs.models.Account;
-import edu.asu.sbs.models.Transaction;
 import edu.asu.sbs.models.User;
-import edu.asu.sbs.repositories.UserRepository;
 import edu.asu.sbs.services.AccountService;
 import edu.asu.sbs.services.RequestService;
 import edu.asu.sbs.services.TransactionService;
@@ -115,7 +114,7 @@ public class CustomerController {
     }
     @PostMapping("/requestAccount")
     @ResponseStatus(HttpStatus.CREATED)
-    String createAccount(NewAccountRequestDTO newAccountRequestDTO) throws IOException {
+    public String createAccount(NewAccountRequestDTO newAccountRequestDTO) throws IOException {
         User currentUser = userService.getCurrentUser();
         NewAccountRequestDTO newAccountResponseDTO = accountService.createAccount(currentUser, newAccountRequestDTO);
         return getAccountRequests();
@@ -238,8 +237,28 @@ public class CustomerController {
     }
 
     @PostMapping("/modifyAccount")
-    @ResponseBody
-    public String changeAccountType() throws IOException {
-        return "";
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void changeAccountType(Long id, AccountType accountType, HttpServletResponse response) throws IOException {
+        Optional<Account> account = accountService.getAccountById(id);
+        User requester = userService.getCurrentUser();
+        account.ifPresent(acc -> {
+            if (acc.getAccountType().equals(accountType)) {
+                throw new GenericRuntimeException("Account already of the requested type");
+            }
+            switch (accountType) {
+                case CURRENT:
+                    requestService.createAccountTypeChangeRequest(acc, AccountType.CURRENT, requester);
+                    break;
+                case SAVINGS:
+                    requestService.createAccountTypeChangeRequest(acc, AccountType.SAVINGS, requester);
+                    break;
+                case CHECKING:
+                    requestService.createAccountTypeChangeRequest(acc, AccountType.CHECKING, requester);
+                    break;
+                default:
+                    throw new GenericRuntimeException("Account Type is not correct:" + accountType);
+            }
+        });
+        response.sendRedirect("home");
     }
 }

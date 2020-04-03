@@ -7,7 +7,6 @@ var email = document.getElementById("email")
 var ssn = document.getElementById("ssn")
 var save = document.getElementById("save")
 var profileBtn = document.getElementById("profileBtn")
-var ssnBtn = document.getElementById("ssnBtn")
 
 function modify(x) {
     if (x.disabled) {
@@ -26,18 +25,11 @@ function editProfile() {
     profileBtn.disabled = true;
 }
 
-function editSSN() {
-    modify(ssn);
-    if (save.disabled) {
-        save.disabled = false;
-    }
-    ssnBtn.disabled = true;
-}
-
 function editAll() {
     modify(userName);
     modify(firstName);
     modify(lastName);
     modify(dateOfBirth);
+    modify(ssn);
 }
 

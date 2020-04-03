@@ -211,7 +211,7 @@ public class UserService {
         user.setDateOfBirth(userDTO.getDateOfBirth());
         user.setSsn(userDTO.getSsn());
         user.setPhoneNumber(userDTO.getPhoneNumber());
-        log.info(user.toString());
+        log.info(Instant.now() + ": Created User: " + user.toString());
         userRepository.save(user);
         return user;
     }
@@ -245,6 +245,7 @@ public class UserService {
         }
         userRepository.delete(existingUser);
         userRepository.flush();
+        log.info(Instant.now() + ": Flushed Inactive Users");
         return true;
     }
 
@@ -257,7 +258,7 @@ public class UserService {
                     user.setActive(true);
                     user.setActivationKey(null);
                     userRepository.save(user);
-                    log.debug("Activated user: {}", user);
+                    log.debug(Instant.now() + ": Activated user: {}", user);
                     return user;
                 });
     }
@@ -270,6 +271,7 @@ public class UserService {
                     user.setResetKey(RandomUtil.generateResetKey());
                     user.setResetDate(Instant.now());
                     userRepository.save(user);
+                    log.info(Instant.now() + ": Password reset for user. user: " + user.toString());
                     return user;
                 });
     }
@@ -283,6 +285,7 @@ public class UserService {
                     user.setPasswordHash(passwordEncoder.encode(newPassword));
                     user.setResetKey(null);
                     user.setResetDate(null);
+                    log.info(Instant.now() + ": Completed Password reset for user. userID: " + user.getId());
                     userRepository.save(user);
                     return user;
                 });
@@ -291,6 +294,7 @@ public class UserService {
     public void updateUserType(User requestBy, String userType) {
 
         requestBy.setUserType(userType);
+        log.info(Instant.now() + ": Updated user. userID: " + requestBy.getId());
         userRepository.save(requestBy);
     }
 
@@ -315,25 +319,38 @@ public class UserService {
         if (!(authentication instanceof AnonymousAuthenticationToken)) {
             currentUserName = authentication.getName();
         }
-        log.debug("Logged in User: '{}'", currentUserName);
+        log.debug(Instant.now() + ": Logged in User: '{}'", currentUserName);
         return userRepository.findOneByUserName(currentUserName).orElse(null);
     }
 
     @Transactional
-    public Optional<User> editUser(UserDTO userDTO) {
-        return userRepository.findById(userDTO.getId())
-                .map(user -> {
-                    user.setPhoneNumber(userDTO.getPhoneNumber());
-                    user.setUserName(userDTO.getUserName());
-                    user.setFirstName(userDTO.getFirstName());
-                    user.setLastName(userDTO.getLastName());
-                    user.setDateOfBirth(userDTO.getDateOfBirth());
-                    user.setEmail(userDTO.getEmail());
-                    user.setSsn(userDTO.getSsn());
-                    user.setActive(true);
-                    userRepository.save(user);
-                    return user;
-                });
+    public void editUser(UserDTO userDTO) {
+        Optional<User> current = userRepository.findById(userDTO.getId());
+        current.ifPresent(user -> {
+            if (!userDTO.getPhoneNumber().isEmpty()) {
+                System.out.println("Changing phone num");
+                user.setPhoneNumber(userDTO.getPhoneNumber());
+            }
+            if (!userDTO.getUserName().isEmpty()) {
+                System.out.println("Changing username");
+                user.setUserName(userDTO.getUserName());
+            }
+            if (!userDTO.getFirstName().isEmpty()) {
+                System.out.println("Changing firstname");
+                user.setFirstName(userDTO.getFirstName());
+            }
+            if (!userDTO.getLastName().isEmpty()) {
+                System.out.println("Changing lastname");
+                user.setLastName(userDTO.getLastName());
+            }
+            if (!userDTO.getEmail().isEmpty()) {
+                System.out.println("Changing email");
+                user.setEmail(userDTO.getEmail());
+            }
+            user.setActive(true);
+            userRepository.save(user);
+            log.info(Instant.now() + ": Updated user from userDTO. userID: " + user.getId());
+        });
     }
 
 
@@ -354,6 +371,7 @@ public class UserService {
             user.setActive(false);
             user.setExpireOn(Instant.now());
             userRepository.save(user);
+            log.info(Instant.now() + ": Deactivated user. userID: " + user.getId());
         });
     }
 
@@ -393,6 +411,7 @@ public class UserService {
                 if (!accountService.getDefaultAccount(user).equals(transferOrRequestDTO.getToAccount())){
                     transactionDTO.setToAccount(transferOrRequestDTO.getToAccount());}
                 else{
+                    log.error(Instant.now() + ": You can not Transfer Money to same Account via account transfer");
                     throw new GenericRuntimeException("You can not Transfer Money to same Account");
                 }
                 break;
@@ -401,6 +420,7 @@ public class UserService {
                     User toUserEmail = this.getUserByEmail(transferOrRequestDTO.getEmail());
                     transactionDTO.setToAccount(accountService.getDefaultAccount(toUserEmail).getId());
                 } else {
+                    log.error(Instant.now() + ": You can not Transfer Money to same Account via email");
                     throw new GenericRuntimeException("You can not Transfer Money to same Account");
                 }
                 break;
@@ -409,10 +429,12 @@ public class UserService {
                     User toUserPhone = this.getUserByPhoneNumber(transferOrRequestDTO.getPhoneNumber());
                     transactionDTO.setToAccount(accountService.getDefaultAccount(toUserPhone).getId());
                 } else {
+                    log.error(Instant.now() + ": You can not Transfer Money to same Account via phoneNumber");
                     throw new GenericRuntimeException("You can not Transfer Money to same Account");
                 }
                 break;
             default:
+                log.error(Instant.now() + ": Invalid mode of transfer");
                 throw new GenericRuntimeException("Invalid mode of Transfer");
         }
         return transactionDTO;

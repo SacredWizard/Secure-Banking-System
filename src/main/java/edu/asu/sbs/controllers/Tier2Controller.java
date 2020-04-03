@@ -11,7 +11,6 @@ import edu.asu.sbs.config.StatusType;
 import edu.asu.sbs.config.UserType;
 import edu.asu.sbs.errors.Exceptions;
 import edu.asu.sbs.errors.UnauthorizedAccessExcpetion;
-import edu.asu.sbs.globals.AccountType;
 import edu.asu.sbs.loader.HandlebarsTemplateLoader;
 import edu.asu.sbs.models.Request;
 import edu.asu.sbs.models.User;
@@ -110,7 +109,7 @@ public class Tier2Controller {
         return template.apply(handlebarsTemplateLoader.getContext(result));
     }
 
-    @GetMapping("/delete/{id}")
+    //@GetMapping("/delete/{id}")
     public void deleteUser(@PathVariable Long id, HttpServletResponse response) throws Exceptions, IOException {
         User current = userService.getUserByIdAndActive(id);
         if (current == null) {
@@ -145,7 +144,7 @@ public class Tier2Controller {
 
     @GetMapping("/transactions")
     public String getAllUserRequest() throws IOException {
-        List<Tier2RequestsDTO> allRequests = requestService.getAllTier2Requests();
+        List<Tier2RequestsDTO> allRequests = requestService.getAllTransactionRequests();
         HashMap<String, List<Tier2RequestsDTO>> resultMap = Maps.newHashMap();
         resultMap.put("result", allRequests);
         JavaTimeModule module = new JavaTimeModule();
@@ -182,23 +181,43 @@ public class Tier2Controller {
         response.sendRedirect("transactions");
     }
 
-    @PostMapping("/modifyAccount")
-    public void modifyUserAccount(Long id, AccountType accountType, HttpServletResponse response) throws IllegalStateException, IOException {
+    @GetMapping("/modifyAccountRequests")
+    public String getAllModifyAccountRequests() throws IOException {
+        List<AccountTypeChangeDTO> allRequests = requestService.getAllAccountTypeChangeRequests();
+        HashMap<String, List<AccountTypeChangeDTO>> resultMap = Maps.newHashMap();
+        resultMap.put("result", allRequests);
+        JavaTimeModule module = new JavaTimeModule();
+        mapper.registerModule(module);
+        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        JsonNode result = mapper.valueToTree(resultMap);
+        Template template = handlebarsTemplateLoader.getTemplate("tier2ModifyAccountRequests");
+        return template.apply(handlebarsTemplateLoader.getContext(result));
+    }
 
-        switch (accountType) {
-            case CHECKING:
-                accountService.updateAccountType(id, AccountType.CHECKING);
-                break;
-            case SAVINGS:
-                accountService.updateAccountType(id, AccountType.SAVINGS);
-                break;
-            case CURRENT:
-                accountService.updateAccountType(id, AccountType.CURRENT);
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + accountType);
-        }
-        response.sendRedirect("transactions");
+    @PostMapping("/approveModifyAccount")
+    public void approveUserAccount(Long requestId, HttpServletResponse response) throws IllegalStateException, IOException {
+
+        User approver = userService.getCurrentUser();
+        Optional<Request> request = requestService.getRequest(requestId);
+        request.ifPresent(req -> {
+            if (req.getStatus().equals(StatusType.PENDING)) {
+                requestService.updateAccountType(requestId, StatusType.APPROVED, approver);
+            }
+        });
+        response.sendRedirect("modifyAccountRequests");
+    }
+
+    @PostMapping("/denyModifyAccount")
+    public void denyUserAccount(Long requestId, HttpServletResponse response) throws IllegalStateException, IOException {
+
+        User approver = userService.getCurrentUser();
+        Optional<Request> request = requestService.getRequest(requestId);
+        request.ifPresent(req -> {
+            if (req.getStatus().equals(StatusType.PENDING)) {
+                requestService.updateAccountType(requestId, StatusType.DECLINED, approver);
+            }
+        });
+        response.sendRedirect("modifyAccountRequests");
     }
 
     @PostMapping("/closeAccount")

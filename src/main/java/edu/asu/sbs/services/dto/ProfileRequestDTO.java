@@ -40,10 +40,5 @@ public class ProfileRequestDTO {
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant modifiedDate;
-    /*
-    @NotNull
-    @Column(nullable = false)
-    private String requestType;
-    */
 
 }

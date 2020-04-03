@@ -1,0 +1,57 @@
+{{#partial "head"}}
+
+{{/partial}}
+{{#partial "body"}}
+    <div>
+        <table id="results" width="100%">
+            <thead>
+            <tr>
+                <th align="center">User Name</th>
+                <th align="center">Account Number</th>
+                <th align="center">Created Date</th>
+                <th align="center">Request ID</th>
+                <th align="center">Status</th>
+                <th align="center">Description</th>
+                <th align="center">From Account Type</th>
+                <th align="center">To Account Type</th>
+                <th align="center">Approve/Deny</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {{#each result }}
+
+                {{#log}}
+                    {{this}}
+                {{/log}}
+                <tr>
+                    <td align="center">{{ userName }}</td>
+                    <td align="center">{{ accountNumber }}</td>
+                    <td align="center">{{ createdDate }}</td>
+                    <td align="center">{{ requestId }}</td>
+                    <td align="center">{{ status }}</td>
+                    <td align="center">{{ description }}</td>
+                    <td align="center">{{ fromAccountType }}</td>
+                    <td align="center">{{ toAccountType }}</td>
+                    <td align="center">
+                        <form method="post" action="/api/v1/tier2/approveModifyAccount" class="inline">
+                            <input type="text" name="requestId" value="{{requestId}}" style="display: none">
+                            <input id="approve" class="btn btn-primary" type="submit" name="approve"
+                                   value="Approve"/>
+                        </form>
+                        <form method="post" action="/api/v1/tier2/denyModifyAccount" class="inline">
+                            <input type="text" name="requestId" value="{{requestId}}" style="display: none">
+                            <input id="deny" class="btn btn-danger" type="submit" name="deny"
+                                   value="Deny"/>
+                        </form>
+                    </td>
+                </tr>
+            {{/each}}
+            </tbody>
+        </table>
+    </div>
+{{/partial}}
+
+{{#partial "scripts"}}
+{{/partial}}
+{{> tier2Base}}

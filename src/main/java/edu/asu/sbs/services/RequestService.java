@@ -6,16 +6,14 @@ import edu.asu.sbs.config.StatusType;
 import edu.asu.sbs.config.TransactionStatus;
 import edu.asu.sbs.config.TransactionType;
 import edu.asu.sbs.errors.GenericRuntimeException;
+import edu.asu.sbs.globals.AccountType;
 import edu.asu.sbs.models.*;
-import edu.asu.sbs.repositories.RequestRepository;
-import edu.asu.sbs.repositories.TransactionAccountLogRepository;
-import edu.asu.sbs.repositories.TransactionRepository;
-import edu.asu.sbs.repositories.UserRepository;
 import edu.asu.sbs.repositories.*;
+import edu.asu.sbs.services.dto.AccountTypeChangeDTO;
 import edu.asu.sbs.services.dto.DetailedNewAccountRequestDTO;
-import edu.asu.sbs.services.dto.NewAccountRequestDTO;
 import edu.asu.sbs.services.dto.ProfileRequestDTO;
 import edu.asu.sbs.services.dto.Tier2RequestsDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class RequestService {
 
@@ -60,7 +59,7 @@ public class RequestService {
             RequestDTO.setRoleChange(request.getLinkedProfileRequest().isChangeRoleRequest());
             RequestDTO.setDescription(request.getDescription());
             RequestDTO.setCreatedDate(request.getCreatedDate());
-            RequestDTO.setModifiedDate(request.getModifiedDate());
+            //saRequestDTO.setModifiedDate(request.getModifiedDate());
             RequestDTO.setUserId(request.getRequestBy().getId());
             RequestDTOList.add(RequestDTO);
         }
@@ -71,7 +70,7 @@ public class RequestService {
         return requestRepository.findOneByRequestId(RequestId);
     }
 
-    public List<Tier2RequestsDTO> getAllTier2Requests() {
+    public List<Tier2RequestsDTO> getAllTransactionRequests() {
         List<Tier2RequestsDTO> tier2RequestsDTOList = Lists.newArrayList();
         List<Request> requestList = requestRepository.findByRequestTypeInAndIsDeleted(Lists.newArrayList(RequestType.APPROVE_CRITICAL_TRANSACTION), false);
         for (Request request : requestList) {
@@ -122,6 +121,7 @@ public class RequestService {
         }
         transactionAccountLog.setLogTime(Instant.now());
         transactionAccountLog.setLogDescription(transactionAccountLog.getLogDescription() + "\n Transaction Approved on " + Instant.now());
+        log.info(Instant.now() + ": Transaction approved/declined. ID: " + transaction.getTransactionId());
         transactionAccountLogRepository.save(transactionAccountLog);
         transactionRepository.save(transaction);
         requestRepository.save(request);
@@ -131,6 +131,7 @@ public class RequestService {
     public void updateUserProfile(Request request, User approver, String requestType, String action) {
 
         if (request.getLinkedProfileRequest().getPhoneNumber().isEmpty() && request.getLinkedProfileRequest().getEmail().isEmpty()) {
+            log.error(Instant.now() + ": Both phone number and email are empty for the request. Request ID:" + request.getRequestId());
             throw new GenericRuntimeException("Both phone number and email are empty");
         }
 
@@ -139,6 +140,7 @@ public class RequestService {
         request.setStatus(action);
         request.setModifiedDate(Instant.now());
         request.setDeleted(true);
+
         requestRepository.save(request);
 
         User user = request.getRequestBy();
@@ -150,6 +152,7 @@ public class RequestService {
                 if (!request.getLinkedProfileRequest().getEmail().isEmpty()) {
                     user.setEmail(request.getLinkedProfileRequest().getEmail());
                 }
+                log.info(Instant.now() + ": Profile Updated for the user. UserID: " + user.getId());
                 userRepository.save(user);
                 break;
             case StatusType.DECLINED:
@@ -168,7 +171,7 @@ public class RequestService {
         request.setStatus(action);
         request.setModifiedDate(Instant.now());
         request.setDeleted(true);
-        if(StatusType.DECLINED.equals(action));
+        if (StatusType.DECLINED.equals(action))
             request.setLinkedAccount(null);
         requestRepository.save(request);
 
@@ -186,6 +189,7 @@ public class RequestService {
             default:
                 throw new GenericRuntimeException("Invalid Action");
         }
+        log.info(Instant.now() + ": Request approved/declined. RequestID: " + request.getRequestId());
     }
 
     public List<ProfileRequestDTO> getAllProfileUpdateRequests(String requestType) {
@@ -223,6 +227,8 @@ public class RequestService {
         request.setLinkedProfileRequest(profileRequest);
         requestRepository.save(request);
         profileRequestRepository.save(profileRequest);
+
+        log.info(Instant.now() + ": Request created for profile update. RequestID: " + request.getRequestId());
     }
 
     @Transactional
@@ -241,7 +247,7 @@ public class RequestService {
         request.setLinkedProfileRequest(profileRequest);
         requestRepository.save(request);
         profileRequestRepository.save(profileRequest);
-
+        log.info(Instant.now() + ": Request created for Change Role. RequestID: " + request.getRequestId());
     }
 
     @Transactional
@@ -251,6 +257,7 @@ public class RequestService {
         request.setModifiedDate(Instant.now());
         request.setDeleted(true);
         requestRepository.save(request);
+        log.info(Instant.now() + ": Request aproved/declined for Change Role. RequestID: " + request.getRequestId());
     }
 
     public List<DetailedNewAccountRequestDTO> getAllNewAccountRequests() {
@@ -270,22 +277,64 @@ public class RequestService {
         return detailedNewAccountRequestDTOList;
     }
 
-    /*
-    public void createAdditionalAccountRequest(CreateAccountDTO createAccountDTO, String requestType) {
-
+    @Transactional
+    public void createAccountTypeChangeRequest(Account account, AccountType toAccount, User requester) {
         Request request = new Request();
         request.setCreatedDate(Instant.now());
         request.setDeleted(false);
-        request.setDescription(requestType);
+        request.setDescription(RequestType.MODIFY_ACCOUNT_TYPE + " to " + toAccount);
         request.setStatus(TransactionStatus.PENDING);
-        request.setRequestType(requestType);
-        request.setRequestBy(userService.getCurrentUser());
-
-        String accNum = accountService.getNumericString(MAX_ACCOUNT_NUM_LEN);
-        createAccountDTO.setAccountNumber(accNum);
-        Account account = accountService.createAccount(userService.getCurrentUser(), createAccountDTO);
-        request.setLinkedAccount();
+        request.setRequestType(RequestType.MODIFY_ACCOUNT_TYPE);
+        request.setRequestBy(requester);
+        request.setLinkedAccount(account);
         requestRepository.save(request);
+        log.info(Instant.now() + ": Request created for Account Type change. RequestID: " + request.getRequestId());
     }
-    */
+
+    public List<AccountTypeChangeDTO> getAllAccountTypeChangeRequests() {
+        List<AccountTypeChangeDTO> RequestDTOList = Lists.newArrayList();
+        List<Request> requestList = requestRepository.findByRequestTypeInAndIsDeleted(Lists.newArrayList(RequestType.MODIFY_ACCOUNT_TYPE), false);
+        for (Request request : requestList) {
+            AccountTypeChangeDTO RequestDTO = new AccountTypeChangeDTO();
+            RequestDTO.setRequestId(request.getRequestId());
+            RequestDTO.setStatus(request.getStatus());
+            RequestDTO.setDescription(request.getDescription());
+            RequestDTO.setCreatedDate(request.getCreatedDate());
+            RequestDTO.setUserName(request.getRequestBy().getUserName());
+
+            String[] toAccountType = request.getDescription().trim().split(" ");
+            RequestDTO.setToAccountType(AccountType.valueOf(toAccountType[toAccountType.length - 1]));
+
+            RequestDTO.setFromAccountType(request.getLinkedAccount().getAccountType());
+            RequestDTO.setAccountNumber(request.getLinkedAccount().getAccountNumber());
+            RequestDTOList.add(RequestDTO);
+        }
+        return RequestDTOList;
+    }
+
+    @Transactional
+    public void updateAccountType(Long requestId, String action, User approver) {
+        Optional<Request> request = getRequest(requestId);
+        request.ifPresent(req -> {
+            String[] splitter = req.getDescription().trim().split(" ");
+            AccountType accountType = AccountType.valueOf(splitter[splitter.length - 1]);
+            req.setApprovedBy(approver);
+            req.setModifiedDate(Instant.now());
+            Account account = req.getLinkedAccount();
+
+            if (action.equals(StatusType.APPROVED)) {
+                req.setStatus(StatusType.APPROVED);
+                account.setAccountType(accountType);
+            } else if (action.equals(StatusType.DECLINED)) {
+                req.setStatus(StatusType.DECLINED);
+            } else {
+                throw new GenericRuntimeException("Invalid Action provided: " + action);
+            }
+            req.setDeleted(true);
+            requestRepository.save(req);
+            accountRepository.save(account);
+            log.info(Instant.now() + ": Request updated for AccountType change. RequestID: " + req.getRequestId());
+        });
+    }
+
 }
