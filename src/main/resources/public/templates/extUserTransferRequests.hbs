@@ -3,9 +3,10 @@
 {{/partial}}
 {{#partial "body"}}
     <div >
-        <table id="results" width="100%">
+        <table id="results">
             <thead>
             <tr>
+                <th>Request Id</th>
                 <th>From Account</th>
                 <th>To Account</th>
                 <th>Description</th>
@@ -16,13 +17,23 @@
             <tbody>
             {{#each result }}
             <tr>
-                <td align="center">{{ fromAccountId }}</td>
-                <td align="center">{{ toAccountId }}</td>
+                <td align="center">{{ requestId }}</td>
+                <td align="center">{{ fromAccount }}</td>
+                <td align="center">{{ toAccount }}</td>
                 <td align="center">{{ description }}</td>
                 <td align="center">{{ amount }}</td>
                 <td align="center">
-                    <button class="inline"> <a href=""> Approve </a> </button>
-                    <button class="inline"> <a href=""> Deny </a> </button>
+
+                    <form method="post" action="/api/v1/customer/approveRequest" class="inline">
+                        <input type="text" name="requestId" value="{{requestId}}" style="display: none">
+                        <input id="update" class="btn btn-primary" type="submit" name="approve"
+                               value="Approve"/>
+                    </form>
+                    <form method="post" action="/api/v1/customer/denyRequest" class="inline">
+                        <input type="text" name="requestId" value="{{requestId}}" style="display: none">
+                        <input id="delete" class="btn btn-danger" type="submit" name="deny"
+                               value="Deny"/>
+                    </form>
                 </td>
             </tr>
             {{/each}}
