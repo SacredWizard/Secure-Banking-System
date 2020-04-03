@@ -13,6 +13,7 @@ import edu.asu.sbs.services.dto.AccountTypeChangeDTO;
 import edu.asu.sbs.services.dto.DetailedNewAccountRequestDTO;
 import edu.asu.sbs.services.dto.ProfileRequestDTO;
 import edu.asu.sbs.services.dto.Tier2RequestsDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class RequestService {
 
@@ -57,7 +59,7 @@ public class RequestService {
             RequestDTO.setRoleChange(request.getLinkedProfileRequest().isChangeRoleRequest());
             RequestDTO.setDescription(request.getDescription());
             RequestDTO.setCreatedDate(request.getCreatedDate());
-            //RequestDTO.setModifiedDate(request.getModifiedDate());
+            //saRequestDTO.setModifiedDate(request.getModifiedDate());
             RequestDTO.setUserId(request.getRequestBy().getId());
             RequestDTOList.add(RequestDTO);
         }
@@ -119,6 +121,7 @@ public class RequestService {
         }
         transactionAccountLog.setLogTime(Instant.now());
         transactionAccountLog.setLogDescription(transactionAccountLog.getLogDescription() + "\n Transaction Approved on " + Instant.now());
+        log.info(Instant.now() + ": Transaction approved/declined. ID: " + transaction.getTransactionId());
         transactionAccountLogRepository.save(transactionAccountLog);
         transactionRepository.save(transaction);
         requestRepository.save(request);
@@ -128,6 +131,7 @@ public class RequestService {
     public void updateUserProfile(Request request, User approver, String requestType, String action) {
 
         if (request.getLinkedProfileRequest().getPhoneNumber().isEmpty() && request.getLinkedProfileRequest().getEmail().isEmpty()) {
+            log.error(Instant.now() + ": Both phone number and email are empty for the request. Request ID:" + request.getRequestId());
             throw new GenericRuntimeException("Both phone number and email are empty");
         }
 
@@ -136,6 +140,7 @@ public class RequestService {
         request.setStatus(action);
         request.setModifiedDate(Instant.now());
         request.setDeleted(true);
+
         requestRepository.save(request);
 
         User user = request.getRequestBy();
@@ -147,6 +152,7 @@ public class RequestService {
                 if (!request.getLinkedProfileRequest().getEmail().isEmpty()) {
                     user.setEmail(request.getLinkedProfileRequest().getEmail());
                 }
+                log.info(Instant.now() + ": Profile Updated for the user. UserID: " + user.getId());
                 userRepository.save(user);
                 break;
             case StatusType.DECLINED:
@@ -183,6 +189,7 @@ public class RequestService {
             default:
                 throw new GenericRuntimeException("Invalid Action");
         }
+        log.info(Instant.now() + ": Request approved/declined. RequestID: " + request.getRequestId());
     }
 
     public List<ProfileRequestDTO> getAllProfileUpdateRequests(String requestType) {
@@ -220,6 +227,8 @@ public class RequestService {
         request.setLinkedProfileRequest(profileRequest);
         requestRepository.save(request);
         profileRequestRepository.save(profileRequest);
+
+        log.info(Instant.now() + ": Request created for profile update. RequestID: " + request.getRequestId());
     }
 
     @Transactional
@@ -238,7 +247,7 @@ public class RequestService {
         request.setLinkedProfileRequest(profileRequest);
         requestRepository.save(request);
         profileRequestRepository.save(profileRequest);
-
+        log.info(Instant.now() + ": Request created for Change Role. RequestID: " + request.getRequestId());
     }
 
     @Transactional
@@ -248,6 +257,7 @@ public class RequestService {
         request.setModifiedDate(Instant.now());
         request.setDeleted(true);
         requestRepository.save(request);
+        log.info(Instant.now() + ": Request aproved/declined for Change Role. RequestID: " + request.getRequestId());
     }
 
     public List<DetailedNewAccountRequestDTO> getAllNewAccountRequests() {
@@ -278,6 +288,7 @@ public class RequestService {
         request.setRequestBy(requester);
         request.setLinkedAccount(account);
         requestRepository.save(request);
+        log.info(Instant.now() + ": Request created for Account Type change. RequestID: " + request.getRequestId());
     }
 
     public List<AccountTypeChangeDTO> getAllAccountTypeChangeRequests() {
@@ -322,6 +333,7 @@ public class RequestService {
             req.setDeleted(true);
             requestRepository.save(req);
             accountRepository.save(account);
+            log.info(Instant.now() + ": Request updated for AccountType change. RequestID: " + req.getRequestId());
         });
     }
 

@@ -60,6 +60,7 @@ public class AccountService {
             //If we allow user to set her desired account number, then we need to handle if DB save fails
             newAccount.setAccountNumber(newAccountRequestDTO.getAccountNumber());
         }
+        log.info(Instant.now() + ": Adding a new account for the user: " + customer.getUserName());
         accountRepository.save(newAccount);
         Request accountRequest = new Request();
         accountRequest.setRequestType(RequestType.CREATE_NEW_ACCOUNT);
@@ -68,6 +69,7 @@ public class AccountService {
         accountRequest.setLinkedAccount(newAccount);
         accountRequest.setRequestBy(customer);
         accountRequest.setStatus(StatusType.PENDING);
+        log.info(Instant.now() + ": Creating a new account request for the user: " + customer.getUserName());
         accountRequestRepository.save(accountRequest);
         newAccountRequestDTO.setAccountNumber(newAccount.getAccountNumber());
         return newAccountRequestDTO;
@@ -77,6 +79,7 @@ public class AccountService {
         try {
             Double currentBalance = account.getAccountBalance();
             account.setAccountBalance(currentBalance + amount);
+            log.info(Instant.now() + ": Credited:" + amount + " amount to the account: " + account.getAccountNumber());
             accountRepository.save(account);
         } catch (Exception e) {
             throw new Exception("Failed to credit from account " + account.getAccountNumber(), e);
@@ -111,11 +114,13 @@ public class AccountService {
                 throw new Exception("Insufficient Funds");
             if (account.isActive()) {
                 account.setAccountBalance(currentBalance - amount);
+                log.info(Instant.now() + ": Debited:" + amount + " amount from the account: " + account.getAccountNumber());
                 accountRepository.save(account);
             } else {
                 throw new Exception("Inactive account");
             }
         } catch (Exception e) {
+            log.error(Instant.now() + "Failed to debit from account " + account.getAccountNumber());
             throw new Exception("Failed to debit from account " + account.getAccountNumber(), e);
         }
     }
@@ -131,9 +136,11 @@ public class AccountService {
             if (!account.get().isDefaultAccount()) {
                 account.ifPresent(account1 -> {
                     account1.setActive(false);
+                    log.info(Instant.now() + ": Closed the account: " + account1.getAccountNumber());
                     accountRepository.save(account1);
                 });
             } else {
+                log.warn(Instant.now() + ": Cannot close the default account");
                 throw new GenericRuntimeException("Cannot close the default account");
             }
         }
