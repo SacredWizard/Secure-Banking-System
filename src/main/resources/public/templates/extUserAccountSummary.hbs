@@ -22,12 +22,7 @@
                         <td align="center">{{ accountType }}</td>
                         <td align="center">{{ accountBalance }}</td>
                         <td align="center">
-                            {{#if defaultAccount }}
-                                <input id="modify" class="btn btn-primary"  type="button" name="modify" onclick="location.href='/api/v1/customer/modify/{{ id }}'" value="Modify"/>
-                            {{else}}
-                                <input id="modify" class="btn btn-primary inline"  type="button" name="modify" onclick="location.href='/api/v1/customer/modify/{{ id }}'" value="Modify"/>
-                                <input id="delete" class="btn btn-danger inline"  type="button" name="delete" onclick="location.href='/api/v1/customer/delete/{{ id }}'" value="Delete"/>
-                            {{/if}}
+                            <input id="modify" class="btn btn-primary"  type="button" name="modify" onclick="location.href='/api/v1/customer/modify/{{ id }}'" value="Modify"/>
                         </td>
                     </tr>
                 </form>

@@ -20,25 +20,13 @@
 <body>
 <header>
     <ul>
-        <li><a class="active" href="">Secure Banking System</a></li>
+        <li><a class="active" href="/api/v1/user/login">Secure Banking System</a></li>
     </ul>
 </header>
 
 <div class="container">
-    <form class="form-horizontal" method="POST" action="/api/v1/user/activate">
-        <div class="form-group">
-            <label class="col-lg-3 control-label">Please enter the activation key sent to your email:</label>
-            <div class="col-lg-8">
-                <input class="form-control" type="text" id="key" name="key" required>
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="col-md-8">
-                <input type="submit" class="btn btn-primary" value="Activate">
-                <span></span>
-                <input type="reset" class="btn btn-primary" value="Reset">
-            </div>
-        </div>
+    <form class="form-horizontal">
+            <h3>An activation link has been sent to your email id.</h3>
     </form>
 </div>
 

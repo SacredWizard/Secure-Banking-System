@@ -5,25 +5,25 @@
             <div class="form-group">
                 <label class="col-lg-3 control-label">From Account:</label>
                 <div class="col-lg-8">
-                    <input class="form-control" type="text" id="fromAccount" name="fromAccount" required>
+                    <input class="form-control" type="text" id="fromAccount" name="fromAccount" pattern="^\d+$/" title="Account Number should be only digits" required>
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-lg-3 control-label">To Account:</label>
                 <div class="col-lg-8">
-                    <input class="form-control" type="text" id="toAccount" name="toAccount" required>
+                    <input class="form-control" type="text" id="toAccount" name="toAccount" pattern="^\d+$/" title="Account Number should be only digits"  required>
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-lg-3 control-label">Amount:</label>
                 <div class="col-lg-8">
-                    <input class="form-control" type="text" id="transactionAmount" name="transactionAmount" required>
+                    <input class="form-control" type="text" id="transactionAmount" name="transactionAmount" pattern="^[\d]+[\.]?[\d]{0,2}$" title="Enter correct amount with maximum 2 decimal places" required>
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-lg-3 control-label">Description :</label>
                 <div class="col-lg-8">
-                    <input class="form-control" type="text" id="description" name="description" required>
+                    <input class="form-control" type="text" id="description" name="description" pattern="[a-zA-Z0-9 ]*"  title="Description should not contain any characters" required>
                 </div>
             </div>
             <div class="form-group">

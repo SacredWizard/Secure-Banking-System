@@ -141,7 +141,6 @@ public class CustomerController {
         response.sendRedirect("home");
     }
 
-
     @GetMapping("/transferOrRequest")
     @ResponseBody
     public String getTransferOrRequestTemplate() throws IOException {
