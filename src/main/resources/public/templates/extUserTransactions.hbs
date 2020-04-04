@@ -1,0 +1,35 @@
+{{#partial "head"}}
+
+{{/partial}}
+{{#partial "body"}}
+    <div >
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Id</th>
+                <th>Created Time</th>
+                <th>Status</th>
+                <th>Transaction Type</th>
+                <th>From Account</th>
+                <th>To Account</th>
+                <th>Transaction Amount</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{#each transactions}}
+                <tr>
+                    <td>{{ transactionId }}</td>
+                    <td>{{ createdDate }}</td>
+                    <td>{{ status }}</td>
+                    <td>{{ transactionType }}</td>
+                    <td>{{ fromAccount }}</td>
+                    <td>{{ toAccount }}</td>
+                    <td>{{ transactionAmount }}</td>
+                </tr>
+            {{/each}}
+            </tbody>
+        </table>
+    </div>
+{{/partial}}
+
+{{> extUserBase}}

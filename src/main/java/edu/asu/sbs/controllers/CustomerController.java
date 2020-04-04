@@ -2,6 +2,8 @@ package edu.asu.sbs.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.jknack.handlebars.Template;
 import edu.asu.sbs.config.RequestType;
 import edu.asu.sbs.config.TransactionStatus;
@@ -91,8 +93,13 @@ public class CustomerController {
     @GetMapping("/creditOrDebit")
     @ResponseBody
     public String getCreditOrDebitTemplate() throws IOException {
+        User currentUser = userService.getCurrentUser();
+        List<String> accounts = accountService.getAccountNumbersForUser(currentUser);
+        HashMap<String, List<String>> resultMap = new HashMap<>();
+        resultMap.put("fromAccounts", accounts);
+        JsonNode result = mapper.valueToTree(resultMap);
         Template template = handlebarsTemplateLoader.getTemplate("extUserCreditOrDebit");
-        return template.apply("");
+        return template.apply(handlebarsTemplateLoader.getContext(result));
     }
 
     @PreAuthorize("hasAnyAuthority('" + UserType.USER_ROLE + "," + UserType.MERCHANT_ROLE + "')")
@@ -133,8 +140,13 @@ public class CustomerController {
     @GetMapping("/transferFunds")
     @ResponseBody
     public String getTransferFundsTemplate() throws IOException {
+        User currentUser = userService.getCurrentUser();
+        List<String> accounts = accountService.getAccountNumbersForUser(currentUser);
+        HashMap<String, List<String>> resultMap = new HashMap<>();
+        resultMap.put("fromAccounts", accounts);
+        JsonNode result = mapper.valueToTree(resultMap);
         Template template = handlebarsTemplateLoader.getTemplate("extUserTransferFunds");
-        return template.apply("");
+        return template.apply(handlebarsTemplateLoader.getContext(result));
     }
 
     @PreAuthorize("hasAnyAuthority('" + UserType.USER_ROLE + "," + UserType.MERCHANT_ROLE + "')")
@@ -183,8 +195,13 @@ public class CustomerController {
     @GetMapping("/transferOrRequest")
     @ResponseBody
     public String getTransferOrRequestTemplate() throws IOException {
+        User currentUser = userService.getCurrentUser();
+        List<String> accounts = accountService.getAccountNumbersForUser(currentUser);
+        HashMap<String, List<String>> resultMap = new HashMap<>();
+        resultMap.put("fromAccounts", accounts);
+        JsonNode result = mapper.valueToTree(resultMap);
         Template template = handlebarsTemplateLoader.getTemplate("extUserTransferAndRequestPayments");
-        return template.apply("");
+        return template.apply(handlebarsTemplateLoader.getContext(result));
     }
 
     @PreAuthorize("hasAnyAuthority('" + UserType.USER_ROLE + "," + UserType.MERCHANT_ROLE + "')")
@@ -258,6 +275,31 @@ public class CustomerController {
         return template.apply(handlebarsTemplateLoader.getContext(result));
     }
 
+    @PreAuthorize("hasAnyAuthority('" + UserType.USER_ROLE + "')")
+    @GetMapping("/transactions/{accountNumber}")
+    @ResponseBody
+    public String getAccountTransactions(@PathVariable long accountNumber) throws IOException {
+        User user = userService.getCurrentUser();
+        Optional<Account> optionalAccount = accountService.getAccountById(accountNumber);
+        if (optionalAccount.isPresent()) {
+            User accountUser = optionalAccount.get().getUser();
+            if (accountUser.getId().equals(user.getId())) {
+                List<TransactionDTO> accTransactions = accountService.getTransactionsForAccount(accountNumber);
+                HashMap<String, List<TransactionDTO>> resultMap = new HashMap<>();
+                JavaTimeModule module = new JavaTimeModule();
+                mapper.registerModule(module);
+                mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+                resultMap.put("transactions", accTransactions);
+                JsonNode result = mapper.valueToTree(resultMap);
+                Template template = handlebarsTemplateLoader.getTemplate("extUserTransactions");
+                return template.apply(handlebarsTemplateLoader.getContext(result));
+
+            } else {
+                throw new GenericRuntimeException("You can get transactions of your account ¯\\_(ツ)_/¯");
+            }
+        }
+        throw new GenericRuntimeException("You can get transactions of your account ¯\\_(ツ)_/¯");
+    }
 
 
     @PreAuthorize("hasAnyAuthority('" + UserType.USER_ROLE + "')")
@@ -291,9 +333,9 @@ public class CustomerController {
         User user = userService.getCurrentUser();
         Optional<Account> optionalAccount = accountService.getAccountById(id);
         if (optionalAccount.isPresent()) {
-            User account = optionalAccount.get().getUser();
-            if (account.equals(user)) {
-                JsonNode result = mapper.valueToTree(account);
+            User accountUser = optionalAccount.get().getUser();
+            if (accountUser.getId().equals(user.getId())) {
+                JsonNode result = mapper.valueToTree(optionalAccount.get());
                 Template template = handlebarsTemplateLoader.getTemplate("extUserModifyAccount");
                 return template.apply(handlebarsTemplateLoader.getContext(result));
             } else {

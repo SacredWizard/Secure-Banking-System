@@ -41,17 +41,17 @@ public class Tier1Controller {
     private final TransactionService transactionService;
     private final UserService userService;
     private final RequestService requestService;
-    private final TransactionHyperledgerService transactionHyperledgerService;
+    //private final TransactionHyperledgerService transactionHyperledgerService;
 
     ObjectMapper mapper = new ObjectMapper();
 
-    public Tier1Controller(AccountService accountService, HandlebarsTemplateLoader handlebarsTemplateLoader, TransactionService transactionService, UserService userService, RequestService requestService, TransactionHyperledgerService transactionHyperledgerService) {
+    public Tier1Controller(AccountService accountService, HandlebarsTemplateLoader handlebarsTemplateLoader, TransactionService transactionService, UserService userService, RequestService requestService/*, TransactionHyperledgerService transactionHyperledgerService*/) {
         this.accountService = accountService;
         this.handlebarsTemplateLoader = handlebarsTemplateLoader;
         this.transactionService = transactionService;
         this.userService = userService;
         this.requestService = requestService;
-        this.transactionHyperledgerService = transactionHyperledgerService;
+        //this.transactionHyperledgerService = transactionHyperledgerService;
     }
 
     @GetMapping("/profile")
@@ -94,23 +94,23 @@ public class Tier1Controller {
         return template.apply(handlebarsTemplateLoader.getContext(result));
     }
 
-    @GetMapping("/viewHyperledgerTransactions")
-    @ResponseBody
-    public String viewHyperledgerTransactions() {
-        return transactionHyperledgerService.getAll();
-    }
-
-    @GetMapping("/getHistory/{id}")
-    @ResponseBody
-    public String getHistoryFromHyperledger(@PathVariable String id) {
-        return transactionHyperledgerService.getHistory(id);
-    }
-
-    @GetMapping("/getRecord/{id}")
-    @ResponseBody
-    public String getRecord(@PathVariable String id) {
-        return transactionHyperledgerService.getById(Long.valueOf(id));
-    }
+//    @GetMapping("/viewHyperledgerTransactions")
+//    @ResponseBody
+//    public String viewHyperledgerTransactions() {
+//        return transactionHyperledgerService.getAll();
+//    }
+//
+//    @GetMapping("/getHistory/{id}")
+//    @ResponseBody
+//    public String getHistoryFromHyperledger(@PathVariable String id) {
+//        return transactionHyperledgerService.getHistory(id);
+//    }
+//
+//    @GetMapping("/getRecord/{id}")
+//    @ResponseBody
+//    public String getRecord(@PathVariable String id) {
+//        return transactionHyperledgerService.getById(Long.valueOf(id));
+//    }
 
     @GetMapping("/transactions")
     @ResponseBody

@@ -77,11 +77,11 @@ public class Account implements Serializable {
     private Set<Request> request = new HashSet<>();
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "acceptedBy")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "acceptedBy")
     private Set<TransferRequest> incomingTransferRequests = new HashSet<>();
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "raisedFrom")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "raisedFrom")
     private Set<TransferRequest> outgoingTransferRequests = new HashSet<>();
 
     public void setAccountNumber(String accountNumberString) {

@@ -66,11 +66,11 @@ public class Transaction implements Serializable {
     private TransactionAccountLog log;
 
     @JsonManagedReference
-    @OneToOne(mappedBy = "linkedTransaction")
+    @OneToOne(fetch = FetchType.EAGER, mappedBy = "linkedTransaction")
     private Request request;
 
     @JsonManagedReference
-    @OneToOne(mappedBy = "transaction")
+    @OneToOne(fetch = FetchType.EAGER, mappedBy = "transaction")
     private Cheque cheque;
 
 }

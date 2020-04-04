@@ -29,17 +29,17 @@ public class TransactionService {
     private final ChequeRepository chequeRepository;
     private final RequestRepository requestRepository;
     private final UserService userService;
-    private final TransactionHyperledgerService transactionHyperledgerService;
+    //private final TransactionHyperledgerService transactionHyperledgerService;
     private final TransferRequestRepository transferRequestRepository;
 
-    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository, TransactionAccountLogRepository transactionAccountLogRepository, ChequeRepository chequeRepository, RequestRepository requestRepository, UserService userService, TransactionHyperledgerService transactionHyperledgerService, TransferRequestRepository transferRequestRepository) {
+    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository, TransactionAccountLogRepository transactionAccountLogRepository, ChequeRepository chequeRepository, RequestRepository requestRepository, UserService userService, /*TransactionHyperledgerService transactionHyperledgerService,*/ TransferRequestRepository transferRequestRepository) {
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
         this.transactionAccountLogRepository = transactionAccountLogRepository;
         this.chequeRepository = chequeRepository;
         this.requestRepository = requestRepository;
         this.userService = userService;
-        this.transactionHyperledgerService = transactionHyperledgerService;
+        //this.transactionHyperledgerService = transactionHyperledgerService;
         this.transferRequestRepository = transferRequestRepository;
     }
 
@@ -134,7 +134,7 @@ public class TransactionService {
                     requestRepository.save(request);
                 }
 //                if (transaction.getStatus().equals(StatusType.APPROVED)) {
-                transactionHyperledgerService.save(transaction);
+                //transactionHyperledgerService.save(transaction);
 //                }
                 return transaction;
             }
@@ -193,7 +193,7 @@ public class TransactionService {
                     cheque.setDeleted(true);
                     transactionRepository.save(transaction);
 //                    if (transaction.getStatus().equals(StatusType.APPROVED)) {
-                    transactionHyperledgerService.save(transaction);
+                    //transactionHyperledgerService.save(transaction);
 //                    }
                     chequeRepository.save(cheque);
                     transactionAccountLogRepository.save(transactionAccountLog);

@@ -32,6 +32,6 @@ public class ProfileRequest implements Serializable {
     private String email;
 
     @JsonManagedReference
-    @OneToOne(mappedBy = "linkedProfileRequest")
+    @OneToOne(fetch = FetchType.EAGER, mappedBy = "linkedProfileRequest")
     private Request request;
 }

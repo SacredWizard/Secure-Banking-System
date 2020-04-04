@@ -103,7 +103,7 @@ public class User implements Serializable {
     private Set<Account> accounts = new HashSet<>();
 
     @JsonManagedReference(value = "representative")
-    @OneToOne(mappedBy = "representative")
+    @OneToOne(fetch = FetchType.EAGER, mappedBy = "representative")
     private Organization organization;
 
     @JsonManagedReference(value = "requestBy")
@@ -111,7 +111,7 @@ public class User implements Serializable {
     private Set<Request> requests = new HashSet<>();
 
     @JsonManagedReference(value = "linkedUser")
-    @OneToOne(mappedBy = "linkedUser")
+    @OneToOne(fetch = FetchType.EAGER, mappedBy = "linkedUser")
     private Session session;
 
 }

@@ -7,11 +7,13 @@ import edu.asu.sbs.errors.GenericRuntimeException;
 import edu.asu.sbs.globals.CreditDebitType;
 import edu.asu.sbs.models.Account;
 import edu.asu.sbs.models.Request;
+import edu.asu.sbs.models.Transaction;
 import edu.asu.sbs.models.User;
 import edu.asu.sbs.repositories.AccountRepository;
 import edu.asu.sbs.repositories.RequestRepository;
 import edu.asu.sbs.services.dto.CreditDebitDTO;
 import edu.asu.sbs.services.dto.NewAccountRequestDTO;
+import edu.asu.sbs.services.dto.TransactionDTO;
 import edu.asu.sbs.services.dto.ViewAccountDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,10 +23,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-
-import static edu.asu.sbs.config.Constants.*;
 
 @Slf4j
 @Service
@@ -177,5 +176,26 @@ public class AccountService {
         return userAccounts.stream()
                 .map(account->account.getAccountNumber())
                 .collect(Collectors.toList());
+    }
+
+    TransactionDTO getTransactionDTO(Transaction transaction) {
+        TransactionDTO transactionDTO = new TransactionDTO();
+        transactionDTO.setCreatedDate(transaction.getCreatedTime());
+        transactionDTO.setTransactionType(transaction.getTransactionType());
+        transactionDTO.setFromAccount(transaction.getFromAccount().getId());
+        transactionDTO.setToAccount(transaction.getToAccount().getId());
+        transactionDTO.setTransactionAmount(transaction.getTransactionAmount());
+        transactionDTO.setTransactionId(transaction.getTransactionId());
+        transactionDTO.setStatus(transaction.getStatus());
+        return transactionDTO;
+    }
+    public List<TransactionDTO> getTransactionsForAccount(long accountNumber) {
+        Account account = accountRepository.getAccountById(accountNumber).orElse(null);
+        List <TransactionDTO> transactionDTOS = new ArrayList<>();
+        if(account!=null) {
+            account.getCreditTransactions().forEach(transaction -> transactionDTOS.add(getTransactionDTO(transaction)));
+            account.getDebitTransactions().forEach(transaction -> transactionDTOS.add(getTransactionDTO(transaction)));
+        }
+        return transactionDTOS;
     }
 }

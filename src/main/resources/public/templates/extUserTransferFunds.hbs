@@ -5,8 +5,11 @@
             <div class="form-group">
                 <label class="col-lg-3 control-label">From Account:</label>
                 <div class="col-lg-8">
-                    <input class="form-control" type="number" min="1" id="fromAccount" name="fromAccount"
-                           title="Account Number should be only digits" required>
+                    <select class="form-control" id="fromAccount" name="fromAccount" required>
+                        {{#each fromAccounts}}
+                            <option>{{this}} </option>
+                        {{/each}}
+                    </select>
                 </div>
             </div>
             <div class="form-group">

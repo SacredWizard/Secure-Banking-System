@@ -24,7 +24,7 @@ public class TransactionAccountLog implements Serializable {
     private Instant logTime;
 
     @JsonManagedReference
-    @OneToOne(mappedBy = "log")
+    @OneToOne(fetch = FetchType.EAGER, mappedBy = "log")
     private Transaction transaction;
 
     @JsonBackReference

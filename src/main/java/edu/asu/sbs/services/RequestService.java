@@ -33,11 +33,11 @@ public class RequestService {
     private final UserService userService;
     private final ProfileRequestRepository profileRequestRepository;
     private final AccountRepository accountRepository;
-    private final TransactionHyperledgerService transactionHyperledgerService;
+    //private final TransactionHyperledgerService transactionHyperledgerService;
     private final TransferRequestRepository transferRequestRepository;
     private final TransactionService transactionService;
 
-    public RequestService(RequestRepository requestRepository, TransactionRepository transactionRepository, TransactionAccountLogRepository transactionAccountLogRepository, AccountService accountService, UserRepository userRepository, UserService userService, ProfileRequestRepository profileRequestRepository, AccountRepository accountRepository, TransactionHyperledgerService transactionHyperledgerService, TransferRequestRepository transferRequestRepository, TransactionService transactionService) {
+    public RequestService(RequestRepository requestRepository, TransactionRepository transactionRepository, TransactionAccountLogRepository transactionAccountLogRepository, AccountService accountService, UserRepository userRepository, UserService userService, ProfileRequestRepository profileRequestRepository, AccountRepository accountRepository, /*TransactionHyperledgerService transactionHyperledgerService,*/ TransferRequestRepository transferRequestRepository, TransactionService transactionService) {
         this.requestRepository = requestRepository;
         this.transactionRepository = transactionRepository;
         this.transactionAccountLogRepository = transactionAccountLogRepository;
@@ -48,7 +48,7 @@ public class RequestService {
         this.accountRepository = accountRepository;
         this.transferRequestRepository = transferRequestRepository;
         this.transactionService = transactionService;
-        this.transactionHyperledgerService = transactionHyperledgerService;
+        //this.transactionHyperledgerService = transactionHyperledgerService;
     }
 
     public List<ProfileRequestDTO> getAllAdminRequests() {
@@ -141,7 +141,7 @@ public class RequestService {
         transactionAccountLogRepository.save(transactionAccountLog);
         transactionRepository.save(transaction);
 //        if (transaction.getStatus().equals(StatusType.APPROVED)) {
-            transactionHyperledgerService.save(transaction);
+            //transactionHyperledgerService.save(transaction);
 //        }
         requestRepository.save(request);
     }
